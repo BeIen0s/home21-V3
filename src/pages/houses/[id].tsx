@@ -20,7 +20,7 @@ import {
   UserPlus,
   Wrench
 } from 'lucide-react';
-import type { HouseStatus } from '@/types';
+import { HouseStatus } from '@/types';
 
 // Types étendus pour la page
 interface HouseDetail {
@@ -78,7 +78,7 @@ const mockHouseDetails: Record<string, HouseDetail> = {
     surface: 35,
     maxOccupancy: 1,
     address: '1A Rue de la Résidence, 75001 Paris',
-    status: 'OCCUPIED',
+    status: HouseStatus.OCCUPIED,
     amenities: ['Kitchenette', 'Salle de bain privée', 'Balcon', 'Chauffage individuel'],
     accessibility: ['Accès PMR', 'Barres d\'appui', 'Douche italienne'],
     monthlyRent: 1200,
@@ -157,7 +157,7 @@ const mockHouseDetails: Record<string, HouseDetail> = {
     surface: 55,
     maxOccupancy: 2,
     address: '2B Rue de la Résidence, 75001 Paris',
-    status: 'AVAILABLE',
+    status: HouseStatus.AVAILABLE,
     amenities: ['Cuisine équipée', 'Salon séparé', 'Salle de bain', 'Chauffage central'],
     accessibility: [],
     monthlyRent: 1500,
@@ -196,19 +196,19 @@ const mockHouseDetails: Record<string, HouseDetail> = {
 
 const getStatusBadge = (status: HouseStatus) => {
   const statusConfig = {
-    'AVAILABLE': { bg: 'bg-success-100', text: 'text-success-800', icon: CheckCircle },
-    'OCCUPIED': { bg: 'bg-primary-100', text: 'text-primary-800', icon: User },
-    'MAINTENANCE': { bg: 'bg-warning-100', text: 'text-warning-800', icon: Settings },
-    'RESERVED': { bg: 'bg-accent-100', text: 'text-accent-800', icon: Clock },
-    'OUT_OF_SERVICE': { bg: 'bg-error-100', text: 'text-error-800', icon: AlertTriangle }
+    [HouseStatus.AVAILABLE]: { bg: 'bg-success-100', text: 'text-success-800', icon: CheckCircle },
+    [HouseStatus.OCCUPIED]: { bg: 'bg-primary-100', text: 'text-primary-800', icon: User },
+    [HouseStatus.MAINTENANCE]: { bg: 'bg-warning-100', text: 'text-warning-800', icon: Settings },
+    [HouseStatus.RESERVED]: { bg: 'bg-accent-100', text: 'text-accent-800', icon: Clock },
+    [HouseStatus.OUT_OF_SERVICE]: { bg: 'bg-error-100', text: 'text-error-800', icon: AlertTriangle }
   };
 
   const statusLabels = {
-    'AVAILABLE': 'Disponible',
-    'OCCUPIED': 'Occupé',
-    'MAINTENANCE': 'Maintenance',
-    'RESERVED': 'Réservé',
-    'OUT_OF_SERVICE': 'Hors service'
+    [HouseStatus.AVAILABLE]: 'Disponible',
+    [HouseStatus.OCCUPIED]: 'Occupé',
+    [HouseStatus.MAINTENANCE]: 'Maintenance',
+    [HouseStatus.RESERVED]: 'Réservé',
+    [HouseStatus.OUT_OF_SERVICE]: 'Hors service'
   };
 
   const config = statusConfig[status];

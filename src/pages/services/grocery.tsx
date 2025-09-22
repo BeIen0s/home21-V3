@@ -293,7 +293,7 @@ const GroceryListPage: React.FC = () => {
                         label=""
                         type="text"
                         value={searchTerm}
-                        onChange={setSearchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Rechercher un produit..."
                         className="pl-10"
                       />
@@ -459,7 +459,7 @@ const GroceryListPage: React.FC = () => {
                       label="Date de livraison"
                       type="date"
                       value={deliveryDate}
-                      onChange={setDeliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
                       required
                     />
@@ -468,7 +468,7 @@ const GroceryListPage: React.FC = () => {
                       id="deliveryTimeSlot"
                       label="Créneau horaire"
                       value={deliveryTimeSlot}
-                      onChange={setDeliveryTimeSlot}
+                      onChange={(e) => setDeliveryTimeSlot(e.target.value)}
                       options={[
                         { value: '', label: 'Choisir un créneau' },
                         ...deliveryTimeSlots
@@ -480,7 +480,7 @@ const GroceryListPage: React.FC = () => {
                       id="specialInstructions"
                       label="Instructions spéciales"
                       value={specialInstructions}
-                      onChange={setSpecialInstructions}
+                      onChange={(value) => setSpecialInstructions(value)}
                       placeholder="Préférences, substitutions, informations de livraison..."
                       rows={3}
                     />

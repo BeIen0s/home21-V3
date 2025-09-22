@@ -17,10 +17,7 @@ import {
   AlertCircle,
   Search,
   Filter,
-  Heart,
-  Wheelchair,
-  Bath,
-  Bed
+  Heart
 } from 'lucide-react';
 
 enum RentalCategory {
@@ -530,8 +527,8 @@ const RentalServicePage: React.FC = () => {
                               id={`quantity-${item.id}`}
                               label="Quantité"
                               value={selectedItems[item.id]?.quantity.toString() || '0'}
-                              onChange={(value) => {
-                                const quantity = parseInt(value);
+                              onChange={(e) => {
+                                const quantity = parseInt(e.target.value);
                                 const duration = selectedItems[item.id]?.duration || RentalDuration.DAILY;
                                 updateItemSelection(item.id, quantity, duration);
                               }}
@@ -548,9 +545,9 @@ const RentalServicePage: React.FC = () => {
                               id={`duration-${item.id}`}
                               label="Durée"
                               value={selectedItems[item.id]?.duration || RentalDuration.DAILY}
-                              onChange={(value) => {
+                              onChange={(e) => {
                                 const quantity = selectedItems[item.id]?.quantity || 1;
-                                updateItemSelection(item.id, quantity, value as RentalDuration);
+                                updateItemSelection(item.id, quantity, e.target.value as RentalDuration);
                               }}
                               options={durationOptions}
                               disabled={!selectedItems[item.id]?.quantity}

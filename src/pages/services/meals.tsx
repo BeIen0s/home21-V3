@@ -13,7 +13,7 @@ import {
   Plus,
   Minus,
   Clock,
-  Chef,
+  ChefHat,
   Heart,
   AlertCircle
 } from 'lucide-react';
@@ -59,6 +59,17 @@ interface MealOrder {
   specialInstructions?: string;
   recurringWeekly: boolean;
   urgentOrder: boolean;
+}
+
+interface MealFormData {
+  mealType?: MealType | '';
+  deliveryDate?: string;
+  deliveryTime?: string;
+  dietaryRestrictions?: DietaryRestriction[];
+  items?: { itemId: string; quantity: number }[];
+  recurringWeekly?: boolean;
+  urgentOrder?: boolean;
+  specialInstructions?: string;
 }
 
 const mealTypes = [
@@ -175,7 +186,7 @@ const deliveryTimes = [
 
 const MealOrderingPage: React.FC = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState<Partial<MealOrder>>({
+  const [formData, setFormData] = useState<MealFormData>({
     mealType: '',
     deliveryDate: '',
     deliveryTime: '',
@@ -500,7 +511,7 @@ const MealOrderingPage: React.FC = () => {
 
                 {getFilteredItems().length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    <Chef className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <ChefHat className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                     <p>Aucun plat disponible pour cette catégorie</p>
                     <p className="text-sm">Essayez une autre catégorie ou modifiez vos restrictions alimentaires</p>
                   </div>
@@ -633,7 +644,7 @@ const MealOrderingPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-start">
-                    <Chef className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
+                    <ChefHat className="h-4 w-4 text-gray-400 mr-2 mt-0.5" />
                     <div>
                       <div className="font-medium text-gray-900">Préparation fraîche</div>
                       <div className="text-gray-600">Plats préparés le jour même</div>

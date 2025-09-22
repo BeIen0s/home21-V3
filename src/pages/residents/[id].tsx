@@ -17,7 +17,7 @@ import {
   Pill,
   Plus
 } from 'lucide-react';
-import type { Resident, ResidentStatus, Gender, Document, MedicalInfo } from '@/types';
+import { Resident, ResidentStatus, Gender, Document, MedicalInfo, DocumentCategory } from '@/types';
 
 // Mock data pour les résidents (même que la page liste)
 const mockResidents: (Resident & { houseName?: string; houseAddress?: string })[] = [
@@ -50,23 +50,39 @@ const mockResidents: (Resident & { houseName?: string; houseAddress?: string })[
           prescribedBy: 'Dr. Martin'
         }
       ],
-      conditions: ['Hypertension', 'Arthrose'],
-      emergencyInstructions: 'Allergique aux fruits de mer - risque de choc anaphylactique'
+      medicalConditions: ['Hypertension', 'Arthrose'],
+      specialNeeds: 'Allergique aux fruits de mer - risque de choc anaphylactique'
     },
     documents: [
       {
         id: 'doc1',
-        name: 'Carte d\'identité',
-        type: 'ID',
-        uploadedAt: new Date('2023-01-10'),
-        url: '/documents/marie-dupont-id.pdf'
+        fileName: 'carte-identite.pdf',
+        originalFileName: 'Carte d\'identité.pdf',
+        filePath: '/documents/marie-dupont-id.pdf',
+        fileSize: 1024000,
+        mimeType: 'application/pdf',
+        category: DocumentCategory.IDENTITY,
+        ownerId: '1',
+        ownerType: 'RESIDENT' as const,
+        isPrivate: true,
+        uploadedBy: 'admin',
+        createdAt: new Date('2023-01-10'),
+        updatedAt: new Date('2023-01-10')
       },
       {
         id: 'doc2',
-        name: 'Dossier médical',
-        type: 'MEDICAL',
-        uploadedAt: new Date('2023-01-12'),
-        url: '/documents/marie-dupont-medical.pdf'
+        fileName: 'dossier-medical.pdf',
+        originalFileName: 'Dossier médical.pdf',
+        filePath: '/documents/marie-dupont-medical.pdf',
+        fileSize: 2048000,
+        mimeType: 'application/pdf',
+        category: DocumentCategory.MEDICAL,
+        ownerId: '1',
+        ownerType: 'RESIDENT' as const,
+        isPrivate: true,
+        uploadedBy: 'admin',
+        createdAt: new Date('2023-01-12'),
+        updatedAt: new Date('2023-01-12')
       }
     ],
     createdAt: new Date('2023-01-10'),
@@ -108,16 +124,24 @@ const mockResidents: (Resident & { houseName?: string; houseAddress?: string })[
           prescribedBy: 'Dr. Rousseau'
         }
       ],
-      conditions: ['Diabète type 2', 'Hypertension'],
-      emergencyInstructions: 'Diabétique - surveiller les signes d\'hypoglycémie'
+      medicalConditions: ['Diabète type 2', 'Hypertension'],
+      specialNeeds: 'Diabétique - surveiller les signes d\'hypoglycémie'
     },
     documents: [
       {
         id: 'doc3',
-        name: 'Carte vitale',
-        type: 'MEDICAL',
-        uploadedAt: new Date('2022-08-25'),
-        url: '/documents/bernard-martin-vitale.pdf'
+        fileName: 'carte-vitale.pdf',
+        originalFileName: 'Carte vitale.pdf',
+        filePath: '/documents/bernard-martin-vitale.pdf',
+        fileSize: 512000,
+        mimeType: 'application/pdf',
+        category: DocumentCategory.MEDICAL,
+        ownerId: '2',
+        ownerType: 'RESIDENT' as const,
+        isPrivate: true,
+        uploadedBy: 'admin',
+        createdAt: new Date('2022-08-25'),
+        updatedAt: new Date('2022-08-25')
       }
     ],
     createdAt: new Date('2022-08-25'),
@@ -352,7 +376,7 @@ const ResidentDetailPage: React.FC = () => {
                       {resident.medicalInfo ? (
                         <>
                           {/* Emergency Instructions */}
-                          {resident.medicalInfo.emergencyInstructions && (
+                          {resident.medicalInfo.specialNeeds && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                               <div className="flex items-start">
                                 <AlertTriangle className="h-5 w-5 text-red-500 mr-3 mt-0.5" />
@@ -361,7 +385,7 @@ const ResidentDetailPage: React.FC = () => {
                                     Instructions d'urgence
                                   </h4>
                                   <p className="text-sm text-red-700">
-                                    {resident.medicalInfo.emergencyInstructions}
+                                    {resident.medicalInfo.specialNeeds}
                                   </p>
                                 </div>
                               </div>
@@ -387,11 +411,11 @@ const ResidentDetailPage: React.FC = () => {
                           )}
 
                           {/* Medical Conditions */}
-                          {resident.medicalInfo.conditions && resident.medicalInfo.conditions.length > 0 && (
+                          {resident.medicalInfo.medicalConditions && resident.medicalInfo.medicalConditions.length > 0 && (
                             <div>
                               <h3 className="text-lg font-medium text-gray-900 mb-4">Conditions médicales</h3>
                               <div className="flex flex-wrap gap-2">
-                                {resident.medicalInfo.conditions.map((condition, index) => (
+                                {resident.medicalInfo.medicalConditions.map((condition, index) => (
                                   <span
                                     key={index}
                                     className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -450,9 +474,9 @@ const ResidentDetailPage: React.FC = () => {
                               <div className="flex items-center">
                                 <FileText className="h-5 w-5 text-gray-400 mr-3" />
                                 <div>
-                                  <div className="font-medium text-gray-900">{document.name}</div>
+                                  <div className="font-medium text-gray-900">{document.originalFileName}</div>
                                   <div className="text-sm text-gray-500">
-                                    Ajouté le {new Intl.DateTimeFormat('fr-FR').format(document.uploadedAt)}
+                                    Ajouté le {new Intl.DateTimeFormat('fr-FR').format(document.createdAt)}
                                   </div>
                                 </div>
                               </div>

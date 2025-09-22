@@ -164,7 +164,7 @@ const NewHousePage: React.FC = () => {
                   label="Nom du logement"
                   type="text"
                   value={formData.name}
-                  onChange={(value) => updateFormData('name', value)}
+                  onChange={(e) => updateFormData('name', e.target.value)}
                   placeholder="ex: Maison 1A"
                   required
                 />
@@ -183,7 +183,7 @@ const NewHousePage: React.FC = () => {
                   label="Étage"
                   type="number"
                   value={formData.floor.toString()}
-                  onChange={(value) => updateFormData('floor', parseInt(value) || 1)}
+                  onChange={(e) => updateFormData('floor', parseInt(e.target.value) || 1)}
                   min={0}
                   required
                 />
@@ -193,7 +193,7 @@ const NewHousePage: React.FC = () => {
                   label="Surface (m²)"
                   type="number"
                   value={formData.surface.toString()}
-                  onChange={(value) => updateFormData('surface', parseInt(value) || 0)}
+                  onChange={(e) => updateFormData('surface', parseInt(e.target.value) || 0)}
                   min={1}
                   required
                 />
@@ -203,7 +203,7 @@ const NewHousePage: React.FC = () => {
                   label="Capacité maximale"
                   type="number"
                   value={formData.maxOccupancy.toString()}
-                  onChange={(value) => updateFormData('maxOccupancy', parseInt(value) || 1)}
+                  onChange={(e) => updateFormData('maxOccupancy', parseInt(e.target.value) || 1)}
                   min={1}
                   max={10}
                   required
@@ -214,7 +214,7 @@ const NewHousePage: React.FC = () => {
                   label="Loyer mensuel (€)"
                   type="number"
                   value={formData.monthlyRent.toString()}
-                  onChange={(value) => updateFormData('monthlyRent', parseInt(value) || 0)}
+                  onChange={(e) => updateFormData('monthlyRent', parseInt(e.target.value) || 0)}
                   min={0}
                   required
                 />
@@ -254,7 +254,7 @@ const NewHousePage: React.FC = () => {
                   label=""
                   type="text"
                   value={newAmenity}
-                  onChange={setNewAmenity}
+                  onChange={(e) => setNewAmenity(e.target.value)}
                   placeholder="Ajouter un équipement..."
                   className="flex-1"
                 />
@@ -297,7 +297,7 @@ const NewHousePage: React.FC = () => {
                   label=""
                   type="text"
                   value={newAccessibility}
-                  onChange={setNewAccessibility}
+                  onChange={(e) => setNewAccessibility(e.target.value)}
                   placeholder="Ajouter une caractéristique d'accessibilité..."
                   className="flex-1"
                 />

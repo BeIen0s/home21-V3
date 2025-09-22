@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'standalone', // Disabled for development
+  output: 'export', // Static export for Netlify
+  trailingSlash: true,
   
-  // Image optimization
+  // Image optimization - disabled for static export
   images: {
+    unoptimized: true,
     domains: ['localhost'],
     formats: ['image/avif', 'image/webp'],
   },
@@ -15,28 +17,7 @@ const nextConfig = {
 
   // Redirects - removed problematic dashboard redirect
 
-  // Headers for security
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
-        ],
-      },
-    ];
-  },
+  // Headers removed - handled by netlify.toml for static export
 
   // Webpack configuration
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {

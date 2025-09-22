@@ -225,7 +225,7 @@ const NewTaskPage: React.FC = () => {
                   label="Titre de la tâche"
                   type="text"
                   value={formData.title}
-                  onChange={(value) => updateFormData('title', value)}
+                  onChange={(e) => updateFormData('title', e.target.value)}
                   placeholder="ex: Réparation robinet cuisine"
                   required
                   error={errors.title}
@@ -247,7 +247,7 @@ const NewTaskPage: React.FC = () => {
                     id="category"
                     label="Catégorie"
                     value={formData.category}
-                    onChange={(value) => updateFormData('category', value)}
+                    onChange={(e) => updateFormData('category', e.target.value)}
                     options={categoryOptions}
                     required
                     error={errors.category}
@@ -257,7 +257,7 @@ const NewTaskPage: React.FC = () => {
                     id="priority"
                     label="Priorité"
                     value={formData.priority}
-                    onChange={(value) => updateFormData('priority', value)}
+                    onChange={(e) => updateFormData('priority', e.target.value)}
                     options={priorityOptions}
                     required
                   />
@@ -266,7 +266,7 @@ const NewTaskPage: React.FC = () => {
                     id="status"
                     label="Statut initial"
                     value={formData.status}
-                    onChange={(value) => updateFormData('status', value)}
+                    onChange={(e) => updateFormData('status', e.target.value)}
                     options={statusOptions}
                     required
                   />
@@ -283,7 +283,7 @@ const NewTaskPage: React.FC = () => {
                   id="assignedToId"
                   label="Assigner à"
                   value={formData.assignedToId}
-                  onChange={(value) => updateFormData('assignedToId', value)}
+                  onChange={(e) => updateFormData('assignedToId', e.target.value)}
                   options={staffOptions}
                 />
 
@@ -291,7 +291,7 @@ const NewTaskPage: React.FC = () => {
                   id="residentId"
                   label="Résident concerné"
                   value={formData.residentId}
-                  onChange={(value) => updateFormData('residentId', value)}
+                  onChange={(e) => updateFormData('residentId', e.target.value)}
                   options={residentOptions}
                 />
 
@@ -299,7 +299,7 @@ const NewTaskPage: React.FC = () => {
                   id="houseId"
                   label="Logement concerné"
                   value={formData.houseId}
-                  onChange={(value) => updateFormData('houseId', value)}
+                  onChange={(e) => updateFormData('houseId', e.target.value)}
                   options={houseOptions}
                 />
               </div>
@@ -323,7 +323,7 @@ const NewTaskPage: React.FC = () => {
                   label="Durée estimée (minutes)"
                   type="number"
                   value={formData.estimatedDuration.toString()}
-                  onChange={(value) => updateFormData('estimatedDuration', parseInt(value) || 60)}
+                  onChange={(e) => updateFormData('estimatedDuration', parseInt(e.target.value) || 60)}
                   min={1}
                   max={1440}
                   error={errors.estimatedDuration}
@@ -341,7 +341,7 @@ const NewTaskPage: React.FC = () => {
                   label=""
                   type="text"
                   value={newTag}
-                  onChange={setNewTag}
+                  onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Ajouter un tag..."
                   className="flex-1"
                 />

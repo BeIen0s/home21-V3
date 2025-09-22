@@ -331,7 +331,7 @@ const ServiceTrackingPage: React.FC = () => {
                   id="serviceType"
                   label=""
                   value={selectedServiceType}
-                  onChange={(value) => setSelectedServiceType(value as ServiceType)}
+                  onChange={(e) => setSelectedServiceType(e.target.value as ServiceType)}
                   options={serviceTypes}
                   className="min-w-[180px]"
                 />
@@ -340,7 +340,7 @@ const ServiceTrackingPage: React.FC = () => {
                   id="status"
                   label=""
                   value={selectedStatus}
-                  onChange={(value) => setSelectedStatus(value as RequestStatus)}
+                  onChange={(e) => setSelectedStatus(e.target.value as RequestStatus)}
                   options={statusOptions}
                   className="min-w-[150px]"
                 />

@@ -48,6 +48,22 @@ interface DriverRequest {
   urgentRequest: boolean;
 }
 
+interface DriverFormData {
+  appointmentType?: AppointmentType | '';
+  vehicleType?: VehicleType;
+  pickupDate?: string;
+  pickupTime?: string;
+  pickupAddress?: string;
+  destinationAddress?: string;
+  returnTrip?: boolean;
+  returnTime?: string;
+  accompaniment?: boolean;
+  estimatedDuration?: number;
+  specialRequirements?: string;
+  contactNumber?: string;
+  urgentRequest?: boolean;
+}
+
 const appointmentTypes = [
   { value: '', label: 'Sélectionnez le type de rendez-vous' },
   { value: AppointmentType.MEDICAL, label: 'Rendez-vous médical' },
@@ -74,7 +90,7 @@ const timeSlots = Array.from({ length: 19 }, (_, i) => {
 
 const DriverServicePage: React.FC = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState<Partial<DriverRequest>>({
+  const [formData, setFormData] = useState<DriverFormData>({
     appointmentType: '',
     vehicleType: VehicleType.STANDARD,
     pickupAddress: 'Résidence Pass21, Rue de la Résidence, Paris',
@@ -263,7 +279,7 @@ const DriverServicePage: React.FC = () => {
                     label="Adresse de départ"
                     type="text"
                     value={formData.pickupAddress || ''}
-                    onChange={(value) => updateFormData('pickupAddress', value)}
+                    onChange={(e) => updateFormData('pickupAddress', e.target.value)}
                     required
                   />
 
@@ -272,7 +288,7 @@ const DriverServicePage: React.FC = () => {
                     label="Adresse de destination"
                     type="text"
                     value={formData.destinationAddress || ''}
-                    onChange={(value) => updateFormData('destinationAddress', value)}
+                    onChange={(e) => updateFormData('destinationAddress', e.target.value)}
                     placeholder="ex: Hôpital Saint-Louis, 1 Avenue Claude Vellefaux, Paris"
                     required
                     error={errors.destinationAddress}
@@ -317,7 +333,7 @@ const DriverServicePage: React.FC = () => {
                       label="Durée estimée (minutes)"
                       type="number"
                       value={formData.estimatedDuration?.toString() || '60'}
-                      onChange={(value) => updateFormData('estimatedDuration', parseInt(value) || 60)}
+                      onChange={(e) => updateFormData('estimatedDuration', parseInt(e.target.value) || 60)}
                       min={15}
                       max={480}
                     />
@@ -327,7 +343,7 @@ const DriverServicePage: React.FC = () => {
                       label="Numéro de contact"
                       type="tel"
                       value={formData.contactNumber || ''}
-                      onChange={(value) => updateFormData('contactNumber', value)}
+                      onChange={(e) => updateFormData('contactNumber', e.target.value)}
                       placeholder="06 12 34 56 78"
                       required
                       error={errors.contactNumber}

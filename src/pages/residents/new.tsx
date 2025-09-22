@@ -15,7 +15,7 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-import type { Gender, ResidentStatus, EmergencyContact, MedicalInfo, Medication } from '@/types';
+import { Gender, ResidentStatus, EmergencyContact, MedicalInfo, Medication } from '@/types';
 
 // Types for form data
 interface ResidentFormData {
@@ -29,9 +29,9 @@ interface ResidentFormData {
   emergencyContact: EmergencyContact;
   medicalInfo?: {
     allergies: string[];
-    conditions: string[];
+    medicalConditions: string[];
     medications: Medication[];
-    emergencyInstructions: string;
+    specialNeeds: string;
   };
 }
 
@@ -44,7 +44,7 @@ const initialFormData: ResidentFormData = {
   lastName: '',
   dateOfBirth: '',
   gender: '',
-  status: 'WAITING_LIST',
+  status: ResidentStatus.WAITING_LIST,
   houseId: '',
   moveInDate: '',
   emergencyContact: {
@@ -55,9 +55,9 @@ const initialFormData: ResidentFormData = {
   },
   medicalInfo: {
     allergies: [],
-    conditions: [],
+    medicalConditions: [],
     medications: [],
-    emergencyInstructions: ''
+    specialNeeds: ''
   }
 };
 
@@ -197,13 +197,16 @@ const NewResidentPage: React.FC = () => {
   const updateFormData = (field: string, value: any) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof ResidentFormData],
-          [child]: value
-        }
-      }));
+      setFormData(prev => {
+        const parentValue = prev[parent as keyof ResidentFormData] as any;
+        return {
+          ...prev,
+          [parent]: {
+            ...parentValue,
+            [child]: value
+          }
+        };
+      });
     } else {
       setFormData(prev => ({
         ...prev,
@@ -235,10 +238,10 @@ const NewResidentPage: React.FC = () => {
   };
 
   const addCondition = () => {
-    if (newCondition.trim() && !formData.medicalInfo?.conditions.includes(newCondition.trim())) {
+    if (newCondition.trim() && !formData.medicalInfo?.medicalConditions.includes(newCondition.trim())) {
       updateFormData('medicalInfo', {
         ...formData.medicalInfo,
-        conditions: [...(formData.medicalInfo?.conditions || []), newCondition.trim()]
+        medicalConditions: [...(formData.medicalInfo?.medicalConditions || []), newCondition.trim()]
       });
       setNewCondition('');
     }
@@ -247,7 +250,7 @@ const NewResidentPage: React.FC = () => {
   const removeCondition = (condition: string) => {
     updateFormData('medicalInfo', {
       ...formData.medicalInfo,
-      conditions: formData.medicalInfo?.conditions.filter(c => c !== condition) || []
+      medicalConditions: formData.medicalInfo?.medicalConditions.filter(c => c !== condition) || []
     });
   };
 
@@ -328,7 +331,7 @@ const NewResidentPage: React.FC = () => {
                   label="Prénom"
                   type="text"
                   value={formData.firstName}
-                  onChange={(value) => updateFormData('firstName', value)}
+                  onChange={(e) => updateFormData('firstName', e.target.value)}
                   required
                   error={errors.firstName}
                 />
@@ -338,7 +341,7 @@ const NewResidentPage: React.FC = () => {
                   label="Nom"
                   type="text"
                   value={formData.lastName}
-                  onChange={(value) => updateFormData('lastName', value)}
+                  onChange={(e) => updateFormData('lastName', e.target.value)}
                   required
                   error={errors.lastName}
                 />
@@ -409,7 +412,7 @@ const NewResidentPage: React.FC = () => {
                   label="Nom complet"
                   type="text"
                   value={formData.emergencyContact.name}
-                  onChange={(value) => updateFormData('emergencyContact.name', value)}
+                  onChange={(e) => updateFormData('emergencyContact.name', e.target.value)}
                   required
                   error={errors['emergencyContact.name']}
                 />
@@ -429,7 +432,7 @@ const NewResidentPage: React.FC = () => {
                   label="Téléphone"
                   type="tel"
                   value={formData.emergencyContact.phone}
-                  onChange={(value) => updateFormData('emergencyContact.phone', value)}
+                  onChange={(e) => updateFormData('emergencyContact.phone', e.target.value)}
                   required
                   error={errors['emergencyContact.phone']}
                 />
@@ -439,7 +442,7 @@ const NewResidentPage: React.FC = () => {
                   label="Email"
                   type="email"
                   value={formData.emergencyContact.email || ''}
-                  onChange={(value) => updateFormData('emergencyContact.email', value)}
+                  onChange={(e) => updateFormData('emergencyContact.email', e.target.value)}
                   error={errors['emergencyContact.email']}
                 />
               </div>
@@ -452,12 +455,12 @@ const NewResidentPage: React.FC = () => {
               {/* Emergency Instructions */}
               <div className="mb-6">
                 <FormTextarea
-                  id="emergencyInstructions"
-                  label="Instructions d'urgence"
-                  value={formData.medicalInfo?.emergencyInstructions || ''}
+                  id="specialNeeds"
+                  label="Besoins spéciaux / Instructions d'urgence"
+                  value={formData.medicalInfo?.specialNeeds || ''}
                   onChange={(value) => updateFormData('medicalInfo', {
                     ...formData.medicalInfo,
-                    emergencyInstructions: value
+                    specialNeeds: value
                   })}
                   placeholder="Informations importantes en cas d'urgence médicale..."
                   rows={3}
@@ -475,7 +478,7 @@ const NewResidentPage: React.FC = () => {
                     label=""
                     type="text"
                     value={newAllergy}
-                    onChange={setNewAllergy}
+                    onChange={(e) => setNewAllergy(e.target.value)}
                     placeholder="Ajouter une allergie..."
                     className="flex-1"
                   />
@@ -518,7 +521,7 @@ const NewResidentPage: React.FC = () => {
                     label=""
                     type="text"
                     value={newCondition}
-                    onChange={setNewCondition}
+                    onChange={(e) => setNewCondition(e.target.value)}
                     placeholder="Ajouter une condition médicale..."
                     className="flex-1"
                   />
@@ -533,7 +536,7 @@ const NewResidentPage: React.FC = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {formData.medicalInfo?.conditions.map((condition, index) => (
+                  {formData.medicalInfo?.medicalConditions.map((condition, index) => (
                     <span
                       key={index}
                       className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"

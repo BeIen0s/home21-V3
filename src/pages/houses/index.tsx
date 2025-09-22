@@ -16,7 +16,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
-import type { HouseStatus, TableColumn } from '@/types';
+import { HouseStatus, TableColumn } from '@/types';
 
 // Types étendus pour la page
 interface HouseWithResident {
@@ -51,7 +51,7 @@ const mockHouses: HouseWithResident[] = [
     surface: 35,
     maxOccupancy: 1,
     address: '1A Rue de la Résidence, 75001 Paris',
-    status: 'OCCUPIED',
+    status: HouseStatus.OCCUPIED,
     amenities: ['Kitchenette', 'Salle de bain privée', 'Balcon'],
     accessibility: ['Accès PMR', 'Barres d\'appui'],
     monthlyRent: 1200,
@@ -72,7 +72,7 @@ const mockHouses: HouseWithResident[] = [
     surface: 55,
     maxOccupancy: 2,
     address: '2B Rue de la Résidence, 75001 Paris',
-    status: 'AVAILABLE',
+    status: HouseStatus.AVAILABLE,
     amenities: ['Cuisine équipée', 'Salon séparé', 'Salle de bain'],
     accessibility: [],
     monthlyRent: 1500,
@@ -88,7 +88,7 @@ const mockHouses: HouseWithResident[] = [
     surface: 32,
     maxOccupancy: 1,
     address: '3C Rue de la Résidence, 75001 Paris',
-    status: 'MAINTENANCE',
+    status: HouseStatus.MAINTENANCE,
     amenities: ['Kitchenette', 'Salle de bain'],
     accessibility: [],
     monthlyRent: 1100,
@@ -104,7 +104,7 @@ const mockHouses: HouseWithResident[] = [
     surface: 42,
     maxOccupancy: 1,
     address: '4D Rue de la Résidence, 75001 Paris',
-    status: 'OCCUPIED',
+    status: HouseStatus.OCCUPIED,
     amenities: ['Cuisine équipée', 'Salle de bain', 'Rangements'],
     accessibility: ['Accès PMR'],
     monthlyRent: 1350,
@@ -125,7 +125,7 @@ const mockHouses: HouseWithResident[] = [
     surface: 58,
     maxOccupancy: 2,
     address: '5E Rue de la Résidence, 75001 Paris',
-    status: 'RESERVED',
+    status: HouseStatus.RESERVED,
     amenities: ['Cuisine équipée', 'Salon', 'Salle de bain', 'Terrasse'],
     accessibility: [],
     monthlyRent: 1600,
@@ -141,7 +141,7 @@ const mockHouses: HouseWithResident[] = [
     surface: 28,
     maxOccupancy: 1,
     address: '6F Rue de la Résidence, 75001 Paris',
-    status: 'OUT_OF_SERVICE',
+    status: HouseStatus.OUT_OF_SERVICE,
     amenities: ['Kitchenette'],
     accessibility: [],
     monthlyRent: 1000,
@@ -153,19 +153,19 @@ const mockHouses: HouseWithResident[] = [
 
 const getStatusBadge = (status: HouseStatus) => {
   const statusConfig = {
-    'AVAILABLE': { bg: 'bg-success-100', text: 'text-success-800', icon: CheckCircle },
-    'OCCUPIED': { bg: 'bg-primary-100', text: 'text-primary-800', icon: User },
-    'MAINTENANCE': { bg: 'bg-warning-100', text: 'text-warning-800', icon: Settings },
-    'RESERVED': { bg: 'bg-accent-100', text: 'text-accent-800', icon: Clock },
-    'OUT_OF_SERVICE': { bg: 'bg-error-100', text: 'text-error-800', icon: AlertTriangle }
+    [HouseStatus.AVAILABLE]: { bg: 'bg-success-100', text: 'text-success-800', icon: CheckCircle },
+    [HouseStatus.OCCUPIED]: { bg: 'bg-primary-100', text: 'text-primary-800', icon: User },
+    [HouseStatus.MAINTENANCE]: { bg: 'bg-warning-100', text: 'text-warning-800', icon: Settings },
+    [HouseStatus.RESERVED]: { bg: 'bg-accent-100', text: 'text-accent-800', icon: Clock },
+    [HouseStatus.OUT_OF_SERVICE]: { bg: 'bg-error-100', text: 'text-error-800', icon: AlertTriangle }
   };
 
   const statusLabels = {
-    'AVAILABLE': 'Disponible',
-    'OCCUPIED': 'Occupé',
-    'MAINTENANCE': 'Maintenance',
-    'RESERVED': 'Réservé',
-    'OUT_OF_SERVICE': 'Hors service'
+    [HouseStatus.AVAILABLE]: 'Disponible',
+    [HouseStatus.OCCUPIED]: 'Occupé',
+    [HouseStatus.MAINTENANCE]: 'Maintenance',
+    [HouseStatus.RESERVED]: 'Réservé',
+    [HouseStatus.OUT_OF_SERVICE]: 'Hors service'
   };
 
   const config = statusConfig[status];
