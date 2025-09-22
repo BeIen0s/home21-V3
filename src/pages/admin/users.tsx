@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { UserManagementTable } from '@/components/admin/UserManagementTable';
 import { UserEditModal } from '@/components/admin/UserEditModal';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { StatsCard } from '@/components/ui/Card';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ExtendedUser, UserRole, AccessLevel } from '@/types';
 import { mockExtendedUsers } from '@/data/mockUserManagement';
 import { Plus, Filter, Download, Users as UsersIcon } from 'lucide-react';
@@ -10,6 +15,7 @@ const UserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<ExtendedUser[]>(mockExtendedUsers);
   const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [filters, setFilters] = useState({
     search: '',
     role: '',
@@ -75,9 +81,16 @@ const UserManagementPage: React.FC = () => {
   };
 
   const handleDeleteUser = (userId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-      setUsers(prev => prev.filter(u => u.id !== userId));
-    }
+    const user = users.find(u => u.id === userId);
+    confirm({
+      title: 'Supprimer l\'utilisateur',
+      message: `Êtes-vous sûr de vouloir supprimer l'utilisateur ${user?.firstName} ${user?.lastName} ? Cette action est irréversible.`,
+      variant: 'danger',
+      confirmText: 'Supprimer',
+      onConfirm: () => {
+        setUsers(prev => prev.filter(u => u.id !== userId));
+      }
+    });
   };
 
   const handleToggleUserStatus = (userId: string) => {
@@ -105,78 +118,55 @@ const UserManagementPage: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <button
+            <Button
+              variant="secondary"
               onClick={() => {/* Export functionality */}}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <Download className="w-4 h-4 mr-2" />
               Exporter
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               onClick={handleCreateUser}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm bg-primary-600 text-sm font-medium text-white hover:bg-primary-700"
             >
               <Plus className="w-4 h-4 mr-2" />
               Nouvel utilisateur
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <UsersIcon className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-semibold text-gray-900">{users.length}</p>
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Total"
+            value={users.length}
+            icon={<UsersIcon className="w-6 h-6" />}
+            color="blue"
+          />
           
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <div className="w-6 h-6 bg-green-600 rounded-full"></div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Actifs</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter(u => u.isActive).length}
-                </p>
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Actifs"
+            value={users.filter(u => u.isActive).length}
+            subtitle={`${Math.round((users.filter(u => u.isActive).length / users.length) * 100)}% du total`}
+            icon={<div className="w-6 h-6 bg-green-600 rounded-full"></div>}
+            color="green"
+          />
           
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <div className="w-6 h-6 bg-yellow-600 rounded-lg"></div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Personnel</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter(u => [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF, UserRole.NURSE, UserRole.CAREGIVER].includes(u.role)).length}
-                </p>
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Personnel"
+            value={users.filter(u => [UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF, UserRole.NURSE, UserRole.CAREGIVER].includes(u.role)).length}
+            subtitle="Staff médical et administratif"
+            icon={<div className="w-6 h-6 bg-yellow-600 rounded-lg"></div>}
+            color="yellow"
+          />
           
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <div className="w-6 h-6 bg-purple-600 rounded"></div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Résidents & Familles</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter(u => [UserRole.RESIDENT, UserRole.FAMILY].includes(u.role)).length}
-                </p>
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Résidents & Familles"
+            value={users.filter(u => [UserRole.RESIDENT, UserRole.FAMILY].includes(u.role)).length}
+            subtitle="Résidents et proches"
+            icon={<div className="w-6 h-6 bg-purple-600 rounded"></div>}
+            color="purple"
+          />
         </div>
 
         {/* Filters */}
@@ -184,45 +174,36 @@ const UserManagementPage: React.FC = () => {
           <div className="flex items-center space-x-4">
             <Filter className="w-5 h-5 text-gray-400" />
             <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <input
+              <Input
                 type="text"
                 placeholder="Rechercher..."
                 value={filters.search}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
               
-              <select
+              <Select
                 value={filters.role}
                 onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="">Tous les rôles</option>
-                {Object.values(UserRole).map(role => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
-              </select>
+                placeholder="Tous les rôles"
+                options={Object.values(UserRole).map(role => ({ value: role, label: role }))}
+              />
               
-              <select
+              <Select
                 value={filters.department}
                 onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="">Tous les départements</option>
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
+                placeholder="Tous les départements"
+                options={departments.map(dept => ({ value: dept || '', label: dept || '' }))}
+              />
               
-              <select
+              <Select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="all">Tous les statuts</option>
-                <option value="active">Actifs</option>
-                <option value="inactive">Inactifs</option>
-              </select>
+                options={[
+                  { value: 'all', label: 'Tous les statuts' },
+                  { value: 'active', label: 'Actifs' },
+                  { value: 'inactive', label: 'Inactifs' }
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -246,6 +227,9 @@ const UserManagementPage: React.FC = () => {
             onSave={handleSaveUser}
           />
         )}
+        
+        {/* Confirmation Dialog */}
+        <ConfirmDialog />
       </div>
     </Layout>
   );

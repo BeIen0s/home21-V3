@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ExtendedUser, UserRole, AccessLevel, Role } from '@/types';
 import { mockRoles } from '@/data/mockUserManagement';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { X, Shield, Clock, Key } from 'lucide-react';
 
 interface UserEditModalProps {
@@ -104,13 +107,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             <h2 className="text-xl font-semibold text-gray-900">
               {user ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
             </h2>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
             >
-              <X className="w-6 h-6" />
-            </button>
+              <X className="w-5 h-5" />
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -119,31 +122,21 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
               <h3 className="text-lg font-medium text-gray-900">Informations personnelles</h3>
               
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Prénom *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    required
-                  />
-                </div>
+                <Input
+                  label="Prénom"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  required
+                />
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nom *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    required
-                  />
-                </div>
+                <Input
+                  label="Nom"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  required
+                />
               </div>
 
               <div>
@@ -294,19 +287,19 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
           {/* Actions */}
           <div className="flex items-center justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Annuler
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm bg-primary-600 text-sm font-medium text-white hover:bg-primary-700"
+              variant="primary"
             >
               {user ? 'Mettre à jour' : 'Créer l\'utilisateur'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

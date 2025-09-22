@@ -1,0 +1,87 @@
+import React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/utils/cn';
+import { ChevronDown } from 'lucide-react';
+
+const selectVariants = cva(
+  'flex w-full rounded-md border bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 appearance-none pr-10',
+  {
+    variants: {
+      variant: {
+        default: 'border-gray-300 focus:border-primary-500',
+        error: 'border-red-300 text-red-900 focus:border-red-500 focus-visible:ring-red-500',
+        success: 'border-green-300 text-green-900 focus:border-green-500 focus-visible:ring-green-500',
+      },
+      size: {
+        sm: 'h-8 px-2 text-xs',
+        md: 'h-10 px-3 text-sm',
+        lg: 'h-12 px-4 text-base',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+    },
+  }
+);
+
+export interface SelectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'>,
+    VariantProps<typeof selectVariants> {
+  label?: string;
+  error?: string;
+  helper?: string;
+  options?: { value: string | number; label: string; disabled?: boolean }[];
+  placeholder?: string;
+}
+
+const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ className, variant, size, label, error, helper, options, placeholder, children, ...props }, ref) => {
+    return (
+      <div className="space-y-1">
+        {label && (
+          <label className="block text-sm font-medium text-gray-700">
+            {label}
+            {props.required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+        )}
+        <div className="relative">
+          <select
+            className={cn(selectVariants({ variant: error ? 'error' : variant, size, className }))}
+            ref={ref}
+            {...props}
+          >
+            {placeholder && (
+              <option value="" disabled>
+                {placeholder}
+              </option>
+            )}
+            {options
+              ? options.map((option) => (
+                  <option key={option.value} value={option.value} disabled={option.disabled}>
+                    {option.label}
+                  </option>
+                ))
+              : children}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+        {error && (
+          <p className="text-xs text-red-600 flex items-center">
+            <span className="mr-1">⚠</span>
+            {error}
+          </p>
+        )}
+        {helper && !error && (
+          <p className="text-xs text-gray-500">{helper}</p>
+        )}
+      </div>
+    );
+  }
+);
+
+Select.displayName = 'Select';
+
+export { Select, selectVariants };
