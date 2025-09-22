@@ -34,10 +34,10 @@ const DashboardPage: React.FC = () => {
               <RecentActivities />
             </div>
 
-            {/* Right Column - Alerts and Quick Actions */}
+            {/* Right Column - Quick Actions and Alerts */}
             <div className="space-y-6">
-              <ResidentAlerts />
               <QuickActions />
+              <ResidentAlerts />
             </div>
           </div>
         </main>
