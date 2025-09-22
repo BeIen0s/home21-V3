@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'ADMIN' | 'STAFF' | 'MANAGER' | 'NURSE' | 'CAREGIVER' | 'RESIDENT';
+  requiredRole?: 'SUPER_ADMIN' | 'ADMIN' | 'RECRUTEUR' | 'RESIDENT' | 'ENCADRANT';
   requiredPermissions?: string[];
 }
 
@@ -23,14 +23,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     if (!isLoading && user) {
-      // Check role requirement
-      if (requiredRole && user.role !== requiredRole && user.role !== 'ADMIN') {
+      // Check role requirement - SUPER_ADMIN has access to everything
+      if (requiredRole && user.role !== requiredRole && user.role !== 'SUPER_ADMIN') {
         router.push('/unauthorized');
         return;
       }
 
-      // Check permissions requirement
-      if (requiredPermissions.length > 0 && user.role !== 'ADMIN') {
+      // Check permissions requirement - SUPER_ADMIN has all permissions
+      if (requiredPermissions.length > 0 && user.role !== 'SUPER_ADMIN') {
         const hasPermissions = requiredPermissions.every(permission =>
           user.permissions?.includes(permission) || user.permissions?.includes('all')
         );
@@ -61,11 +61,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Don't render if role/permission check failed (redirect will happen)
-  if (requiredRole && user?.role !== requiredRole && user?.role !== 'ADMIN') {
+  if (requiredRole && user?.role !== requiredRole && user?.role !== 'SUPER_ADMIN') {
     return null;
   }
 
-  if (requiredPermissions.length > 0 && user?.role !== 'ADMIN') {
+  if (requiredPermissions.length > 0 && user?.role !== 'SUPER_ADMIN') {
     const hasPermissions = requiredPermissions.every(permission =>
       user?.permissions?.includes(permission) || user?.permissions?.includes('all')
     );

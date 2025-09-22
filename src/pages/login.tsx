@@ -92,32 +92,42 @@ const LoginPage: React.FC = () => {
     return new Promise((resolve) => {
       setTimeout(() => {
         // Simulate different users for demo
-        if (formData.email === 'admin@pass21.fr' && formData.password === 'admin123') {
-          if (!showTwoFactor) {
+        // Mock authentication with new role system
+        const mockUsers: Record<string, { password: string; user: any; requiresTwoFactor?: boolean }> = {
+          'superadmin@pass21.fr': {
+            password: 'super123',
+            user: { id: '1', name: 'Super Administrateur', email: 'superadmin@pass21.fr', role: 'SUPER_ADMIN' },
+            requiresTwoFactor: true
+          },
+          'admin@pass21.fr': {
+            password: 'admin123', 
+            user: { id: '2', name: 'Administrateur', email: 'admin@pass21.fr', role: 'ADMIN' }
+          },
+          'recruteur@pass21.fr': {
+            password: 'recruit123',
+            user: { id: '3', name: 'Recruteur', email: 'recruteur@pass21.fr', role: 'RECRUTEUR' }
+          },
+          'encadrant@pass21.fr': {
+            password: 'encadrant123',
+            user: { id: '4', name: 'Encadrant', email: 'encadrant@pass21.fr', role: 'ENCADRANT' }
+          },
+          'resident@pass21.fr': {
+            password: 'resident123',
+            user: { id: '5', name: 'Marie Dupont', email: 'resident@pass21.fr', role: 'RESIDENT' }
+          }
+        };
+        
+        const userAccount = mockUsers[formData.email];
+        if (userAccount && userAccount.password === formData.password) {
+          if (userAccount.requiresTwoFactor && !showTwoFactor) {
             resolve({ success: true, requiresTwoFactor: true });
-          } else if (formData.twoFactorCode === '123456') {
-            resolve({ 
-              success: true, 
-              user: { 
-                id: '1', 
-                name: 'Administrateur', 
-                email: 'admin@pass21.fr',
-                role: 'ADMIN'
-              } 
-            });
+          } else if (userAccount.requiresTwoFactor && formData.twoFactorCode === '123456') {
+            resolve({ success: true, user: userAccount.user });
+          } else if (!userAccount.requiresTwoFactor) {
+            resolve({ success: true, user: userAccount.user });
           } else {
             resolve({ success: false });
           }
-        } else if (formData.email === 'staff@pass21.fr' && formData.password === 'staff123') {
-          resolve({ 
-            success: true, 
-            user: { 
-              id: '2', 
-              name: 'Personnel', 
-              email: 'staff@pass21.fr',
-              role: 'STAFF'
-            } 
-          });
         } else {
           resolve({ success: false });
         }
@@ -246,9 +256,14 @@ const LoginPage: React.FC = () => {
                 <div className="flex items-start">
                   <CheckCircle className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
                   <div className="text-xs text-blue-700">
-                    <p className="font-medium mb-1">Comptes de démonstration :</p>
-                    <p><strong>Admin:</strong> admin@pass21.fr / admin123 (avec 2FA: 123456)</p>
-                    <p><strong>Staff:</strong> staff@pass21.fr / staff123</p>
+                    <p className="font-medium mb-2">Comptes de démonstration :</p>
+                    <div className="space-y-1">
+                      <p><strong>Super Admin:</strong> superadmin@pass21.fr / super123 (2FA: 123456)</p>
+                      <p><strong>Admin:</strong> admin@pass21.fr / admin123</p>
+                      <p><strong>Recruteur:</strong> recruteur@pass21.fr / recruit123</p>
+                      <p><strong>Encadrant:</strong> encadrant@pass21.fr / encadrant123</p>
+                      <p><strong>Résident:</strong> resident@pass21.fr / resident123</p>
+                    </div>
                   </div>
                 </div>
               </div>

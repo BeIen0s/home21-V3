@@ -20,15 +20,9 @@ export interface User {
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  STAFF = 'STAFF',
-  NURSE = 'NURSE',
-  CAREGIVER = 'CAREGIVER',
+  RECRUTEUR = 'RECRUTEUR',
   RESIDENT = 'RESIDENT',
-  FAMILY = 'FAMILY',
-  VISITOR = 'VISITOR',
-  CONTRACTOR = 'CONTRACTOR',
-  VOLUNTEER = 'VOLUNTEER',
+  ENCADRANT = 'ENCADRANT',
 }
 
 // Resident Types

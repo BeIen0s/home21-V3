@@ -14,15 +14,9 @@ const getRoleColor = (role: UserRole) => {
   const colors = {
     [UserRole.SUPER_ADMIN]: 'bg-red-100 text-red-800',
     [UserRole.ADMIN]: 'bg-purple-100 text-purple-800',
-    [UserRole.MANAGER]: 'bg-blue-100 text-blue-800',
-    [UserRole.NURSE]: 'bg-green-100 text-green-800',
-    [UserRole.CAREGIVER]: 'bg-teal-100 text-teal-800',
-    [UserRole.STAFF]: 'bg-gray-100 text-gray-800',
+    [UserRole.RECRUTEUR]: 'bg-blue-100 text-blue-800',
     [UserRole.RESIDENT]: 'bg-yellow-100 text-yellow-800',
-    [UserRole.FAMILY]: 'bg-orange-100 text-orange-800',
-    [UserRole.VISITOR]: 'bg-indigo-100 text-indigo-800',
-    [UserRole.CONTRACTOR]: 'bg-pink-100 text-pink-800',
-    [UserRole.VOLUNTEER]: 'bg-emerald-100 text-emerald-800',
+    [UserRole.ENCADRANT]: 'bg-green-100 text-green-800',
   };
   return colors[role] || 'bg-gray-100 text-gray-800';
 };
@@ -207,7 +201,7 @@ const UserManagementPage: React.FC = () => {
         email: userData.email!,
         firstName: userData.firstName!,
         lastName: userData.lastName!,
-        role: userData.role || UserRole.STAFF,
+        role: userData.role || UserRole.RESIDENT,
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -229,7 +223,7 @@ const UserManagementPage: React.FC = () => {
     total: users.length,
     active: users.filter(u => u.isActive).length,
     inactive: users.filter(u => !u.isActive).length,
-    admins: users.filter(u => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN').length,
+    admins: users.filter(u => u.role === UserRole.ADMIN || u.role === UserRole.SUPER_ADMIN).length,
     twoFactorEnabled: users.filter(u => u.twoFactorEnabled).length
   };
 

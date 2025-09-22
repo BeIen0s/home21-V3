@@ -5,7 +5,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'STAFF' | 'MANAGER' | 'NURSE' | 'CAREGIVER' | 'RESIDENT';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'RECRUTEUR' | 'RESIDENT' | 'ENCADRANT';
   avatar?: string;
   permissions?: string[];
 }
@@ -51,34 +51,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // This is a mock login function
       // In a real app, this would make an API call
       const mockUsers: Record<string, { password: string; user: User }> = {
-        'admin@pass21.fr': {
-          password: 'admin123',
+        'superadmin@pass21.fr': {
+          password: 'super123',
           user: {
             id: '1',
-            name: 'Administrateur Pass21',
-            email: 'admin@pass21.fr',
-            role: 'ADMIN',
+            name: 'Super Administrateur',
+            email: 'superadmin@pass21.fr',
+            role: 'SUPER_ADMIN',
             permissions: ['all']
           }
         },
-        'staff@pass21.fr': {
-          password: 'staff123',
+        'admin@pass21.fr': {
+          password: 'admin123',
           user: {
             id: '2',
-            name: 'Personnel Pass21',
-            email: 'staff@pass21.fr',
-            role: 'STAFF',
-            permissions: ['residents', 'tasks']
+            name: 'Administrateur',
+            email: 'admin@pass21.fr',
+            role: 'ADMIN',
+            permissions: ['users', 'residents', 'houses', 'services', 'tasks', 'settings']
           }
         },
-        'nurse@pass21.fr': {
-          password: 'nurse123',
+        'recruteur@pass21.fr': {
+          password: 'recruit123',
           user: {
             id: '3',
-            name: 'Infirmière Pass21',
-            email: 'nurse@pass21.fr',
-            role: 'NURSE',
-            permissions: ['residents', 'medical', 'tasks']
+            name: 'Recruteur',
+            email: 'recruteur@pass21.fr',
+            role: 'RECRUTEUR',
+            permissions: ['residents', 'houses']
+          }
+        },
+        'encadrant@pass21.fr': {
+          password: 'encadrant123',
+          user: {
+            id: '4',
+            name: 'Encadrant',
+            email: 'encadrant@pass21.fr',
+            role: 'ENCADRANT',
+            permissions: ['residents', 'tasks', 'services']
+          }
+        },
+        'resident@pass21.fr': {
+          password: 'resident123',
+          user: {
+            id: '5',
+            name: 'Marie Dupont',
+            email: 'resident@pass21.fr',
+            role: 'RESIDENT',
+            permissions: ['profile', 'services']
           }
         }
       };
