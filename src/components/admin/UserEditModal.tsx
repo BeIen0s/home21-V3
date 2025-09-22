@@ -4,6 +4,7 @@ import { mockRoles } from '@/data/mockUserManagement';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { X, Shield, Clock, Key } from 'lucide-react';
 
 interface UserEditModalProps {
@@ -139,57 +140,37 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  required
-                />
-              </div>
+              <Input
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                required
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Téléphone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              </div>
+              <Input
+                label="Téléphone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              />
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Département
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.department}
-                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    placeholder="Administration, Soins, etc."
-                  />
-                </div>
+                <Input
+                  label="Département"
+                  type="text"
+                  value={formData.department}
+                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                  placeholder="Administration, Soins, etc."
+                />
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Poste
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.position}
-                    onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    placeholder="Directeur, Infirmière, etc."
-                  />
-                </div>
+                <Input
+                  label="Poste"
+                  type="text"
+                  value={formData.position}
+                  onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+                  placeholder="Directeur, Infirmière, etc."
+                />
               </div>
             </div>
 
@@ -201,31 +182,29 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Rôle principal *
                 </label>
-                <select
+                <Select
                   value={formData.role}
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as UserRole }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   required
                 >
                   {Object.values(UserRole).map(role => (
                     <option key={role} value={role}>{role}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Niveau d'accès
                 </label>
-                <select
+                <Select
                   value={formData.accessLevel}
                   onChange={(e) => setFormData(prev => ({ ...prev, accessLevel: e.target.value as AccessLevel }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   {Object.values(AccessLevel).map(level => (
                     <option key={level} value={level}>{level}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* Security Options */}
@@ -236,25 +215,17 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 </h4>
                 
                 <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.canAccessAfterHours}
-                      onChange={(e) => setFormData(prev => ({ ...prev, canAccessAfterHours: e.target.checked }))}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Accès en dehors des heures d'ouverture</span>
-                  </label>
+                  <Checkbox
+                    checked={formData.canAccessAfterHours}
+                    onChange={(e) => setFormData(prev => ({ ...prev, canAccessAfterHours: e.target.checked }))}
+                    label="Accès en dehors des heures d'ouverture"
+                  />
                   
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.twoFactorEnabled}
-                      onChange={(e) => setFormData(prev => ({ ...prev, twoFactorEnabled: e.target.checked }))}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Authentification à deux facteurs</span>
-                  </label>
+                  <Checkbox
+                    checked={formData.twoFactorEnabled}
+                    onChange={(e) => setFormData(prev => ({ ...prev, twoFactorEnabled: e.target.checked }))}
+                    label="Authentification à deux facteurs"
+                  />
                 </div>
               </div>
 
@@ -267,18 +238,14 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 
                 <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-200 rounded-md p-3">
                   {mockRoles.filter(role => role.isActive).map(role => (
-                    <label key={role.id} className="flex items-start">
-                      <input
-                        type="checkbox"
-                        checked={formData.selectedRoles.includes(role.id)}
-                        onChange={() => handleRoleToggle(role.id)}
-                        className="mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <div className="ml-2">
-                        <div className="text-sm font-medium text-gray-900">{role.name}</div>
-                        <div className="text-xs text-gray-500">{role.description}</div>
-                      </div>
-                    </label>
+                    <Checkbox
+                      key={role.id}
+                      checked={formData.selectedRoles.includes(role.id)}
+                      onChange={() => handleRoleToggle(role.id)}
+                      label={role.name}
+                      description={role.description}
+                      containerClassName="items-start"
+                    />
                   ))}
                 </div>
               </div>

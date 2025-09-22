@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
-import { Plus, Eye, Edit, Phone, Mail } from 'lucide-react';
+import { StatsCard, Badge } from '@/components/ui';
+import { Plus, Eye, Edit, Phone, Mail, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 import type { Resident, ResidentStatus, Gender, TableColumn } from '@/types';
 
 // Mock data pour les résidents
@@ -103,25 +104,18 @@ const mockResidents: (Resident & { houseName?: string })[] = [
 
 const getStatusBadge = (status: ResidentStatus) => {
   const statusConfig = {
-    'ACTIVE': 'bg-success-100 text-success-800',
-    'WAITING_LIST': 'bg-warning-100 text-warning-800',
-    'TEMPORARY_LEAVE': 'bg-accent-100 text-accent-800',
-    'MOVED_OUT': 'bg-gray-100 text-gray-800',
-    'DECEASED': 'bg-error-100 text-error-800'
+    'ACTIVE': { variant: 'success' as const, label: 'Actif' },
+    'WAITING_LIST': { variant: 'warning' as const, label: 'Liste d\'attente' },
+    'TEMPORARY_LEAVE': { variant: 'accent' as const, label: 'Congé temporaire' },
+    'MOVED_OUT': { variant: 'default' as const, label: 'Déménagé' },
+    'DECEASED': { variant: 'error' as const, label: 'Décédé' }
   };
 
-  const statusLabels = {
-    'ACTIVE': 'Actif',
-    'WAITING_LIST': 'Liste d\'attente',
-    'TEMPORARY_LEAVE': 'Congé temporaire',
-    'MOVED_OUT': 'Déménagé',
-    'DECEASED': 'Décédé'
-  };
-
+  const config = statusConfig[status];
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[status]}`}>
-      {statusLabels[status]}
-    </span>
+    <Badge variant={config.variant}>
+      {config.label}
+    </Badge>
   );
 };
 
@@ -250,59 +244,33 @@ const ResidentsPage: React.FC = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-primary-100 rounded-lg">
-                  <div className="w-6 h-6 text-primary-600">👥</div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Résidents</p>
-                  <p className="text-2xl font-bold text-gray-900">{mockResidents.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-success-100 rounded-lg">
-                  <div className="w-6 h-6 text-success-600">✅</div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Actifs</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {mockResidents.filter(r => r.status === 'ACTIVE').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-warning-100 rounded-lg">
-                  <div className="w-6 h-6 text-warning-600">⏳</div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Liste d'attente</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {mockResidents.filter(r => r.status === 'WAITING_LIST').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-accent-100 rounded-lg">
-                  <div className="w-6 h-6 text-accent-600">📊</div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Âge moyen</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {Math.round(mockResidents.reduce((acc, r) => acc + calculateAge(r.dateOfBirth), 0) / mockResidents.length)} ans
-                  </p>
-                </div>
-              </div>
-            </div>
+            <StatsCard
+              title="Total Résidents"
+              value={mockResidents.length}
+              icon={<Users className="w-6 h-6" />}
+              color="blue"
+            />
+            
+            <StatsCard
+              title="Actifs"
+              value={mockResidents.filter(r => r.status === 'ACTIVE').length}
+              icon={<UserCheck className="w-6 h-6" />}
+              color="green"
+            />
+            
+            <StatsCard
+              title="Liste d'attente"
+              value={mockResidents.filter(r => r.status === 'WAITING_LIST').length}
+              icon={<Clock className="w-6 h-6" />}
+              color="yellow"
+            />
+            
+            <StatsCard
+              title="Âge moyen"
+              value={`${Math.round(mockResidents.reduce((acc, r) => acc + calculateAge(r.dateOfBirth), 0) / mockResidents.length)} ans`}
+              icon={<TrendingUp className="w-6 h-6" />}
+              color="purple"
+            />
           </div>
 
           {/* Residents Table */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
+import { StatsCard, Select, Badge } from '@/components/ui';
 import { 
   Calendar,
   ShoppingCart,
@@ -13,7 +14,8 @@ import {
   AlertCircle,
   Plus,
   Eye,
-  Filter
+  Filter,
+  Euro
 } from 'lucide-react';
 
 // Service types
@@ -165,45 +167,38 @@ const mockRequests: ServiceRequest[] = [
 const getStatusBadge = (status: ServiceRequestStatus) => {
   const statusConfig = {
     [ServiceRequestStatus.PENDING]: {
-      bg: 'bg-yellow-100',
-      text: 'text-yellow-800',
+      variant: 'yellow' as const,
       icon: Clock,
       label: 'En attente'
     },
     [ServiceRequestStatus.CONFIRMED]: {
-      bg: 'bg-blue-100',
-      text: 'text-blue-800',
+      variant: 'blue' as const,
       icon: CheckCircle,
       label: 'Confirmé'
     },
     [ServiceRequestStatus.IN_PROGRESS]: {
-      bg: 'bg-purple-100',
-      text: 'text-purple-800',
+      variant: 'purple' as const,
       icon: Clock,
       label: 'En cours'
     },
     [ServiceRequestStatus.COMPLETED]: {
-      bg: 'bg-success-100',
-      text: 'text-success-800',
+      variant: 'success' as const,
       icon: CheckCircle,
       label: 'Terminé'
     },
     [ServiceRequestStatus.CANCELLED]: {
-      bg: 'bg-error-100',
-      text: 'text-error-800',
+      variant: 'error' as const,
       icon: AlertCircle,
       label: 'Annulé'
     }
   };
 
   const config = statusConfig[status];
-  const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-      <Icon className="h-3 w-3 mr-1" />
+    <Badge variant={config.variant} icon={config.icon}>
       {config.label}
-    </span>
+    </Badge>
   );
 };
 
@@ -266,61 +261,44 @@ const ServicesPage: React.FC = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Statistics Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <Calendar className="w-5 h-5 text-primary-600 mr-2" />
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Total Demandes</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.total}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <Clock className="w-5 h-5 text-yellow-600 mr-2" />
-                <div>
-                  <p className="text-xs font-medium text-gray-600">En attente</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.pending}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <Clock className="w-5 h-5 text-purple-600 mr-2" />
-                <div>
-                  <p className="text-xs font-medium text-gray-600">En cours</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.inProgress}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-success-600 mr-2" />
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Terminées</p>
-                  <p className="text-xl font-bold text-gray-900">{stats.completed}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center">
-                <div className="w-5 h-5 text-accent-600 mr-2 text-lg font-bold">€</div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Total facturé</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {new Intl.NumberFormat('fr-FR', {
-                      style: 'currency',
-                      currency: 'EUR',
-                      minimumFractionDigits: 0
-                    }).format(stats.totalCost)}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <StatsCard
+              title="Total Demandes"
+              value={stats.total}
+              icon={<Calendar className="w-5 h-5" />}
+              color="blue"
+            />
+            
+            <StatsCard
+              title="En attente"
+              value={stats.pending}
+              icon={<Clock className="w-5 h-5" />}
+              color="yellow"
+            />
+            
+            <StatsCard
+              title="En cours"
+              value={stats.inProgress}
+              icon={<Clock className="w-5 h-5" />}
+              color="purple"
+            />
+            
+            <StatsCard
+              title="Terminées"
+              value={stats.completed}
+              icon={<CheckCircle className="w-5 h-5" />}
+              color="green"
+            />
+            
+            <StatsCard
+              title="Total facturé"
+              value={new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0
+              }).format(stats.totalCost)}
+              icon={<Euro className="w-5 h-5" />}
+              color="purple"
+            />
           </div>
 
           {/* Services Grid */}
@@ -380,10 +358,10 @@ const ServicesPage: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <Filter className="h-4 w-4 text-gray-400" />
-                  <select
+                  <Select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as ServiceRequestStatus | 'ALL')}
-                    className="text-sm border-gray-300 rounded-md focus:border-primary-500 focus:ring-primary-500"
+                    className="min-w-[140px] text-sm"
                   >
                     <option value="ALL">Tous les statuts</option>
                     <option value={ServiceRequestStatus.PENDING}>En attente</option>
@@ -391,7 +369,7 @@ const ServicesPage: React.FC = () => {
                     <option value={ServiceRequestStatus.IN_PROGRESS}>En cours</option>
                     <option value={ServiceRequestStatus.COMPLETED}>Terminé</option>
                     <option value={ServiceRequestStatus.CANCELLED}>Annulé</option>
-                  </select>
+                  </Select>
                 </div>
                 <span className="text-sm text-gray-500">
                   {filteredRequests.length} demande{filteredRequests.length > 1 ? 's' : ''}

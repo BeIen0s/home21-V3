@@ -3,20 +3,22 @@ import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
+import { StatsCard, Select, Badge } from '@/components/ui';
 import { 
   Plus, 
   Home, 
+  CheckCircle, 
   User, 
   Settings, 
+  Euro,
   Calendar,
   MapPin,
   Eye,
   Edit,
   AlertTriangle,
-  CheckCircle,
   Clock
 } from 'lucide-react';
-import { HouseStatus, TableColumn } from '@/types';
+import { HouseStatus, type TableColumn } from '@/types';
 
 // Types étendus pour la page
 interface HouseWithResident {
@@ -153,29 +155,19 @@ const mockHouses: HouseWithResident[] = [
 
 const getStatusBadge = (status: HouseStatus) => {
   const statusConfig = {
-    [HouseStatus.AVAILABLE]: { bg: 'bg-success-100', text: 'text-success-800', icon: CheckCircle },
-    [HouseStatus.OCCUPIED]: { bg: 'bg-primary-100', text: 'text-primary-800', icon: User },
-    [HouseStatus.MAINTENANCE]: { bg: 'bg-warning-100', text: 'text-warning-800', icon: Settings },
-    [HouseStatus.RESERVED]: { bg: 'bg-accent-100', text: 'text-accent-800', icon: Clock },
-    [HouseStatus.OUT_OF_SERVICE]: { bg: 'bg-error-100', text: 'text-error-800', icon: AlertTriangle }
-  };
-
-  const statusLabels = {
-    [HouseStatus.AVAILABLE]: 'Disponible',
-    [HouseStatus.OCCUPIED]: 'Occupé',
-    [HouseStatus.MAINTENANCE]: 'Maintenance',
-    [HouseStatus.RESERVED]: 'Réservé',
-    [HouseStatus.OUT_OF_SERVICE]: 'Hors service'
+    [HouseStatus.AVAILABLE]: { variant: 'success' as const, icon: CheckCircle, label: 'Disponible' },
+    [HouseStatus.OCCUPIED]: { variant: 'info' as const, icon: User, label: 'Occupé' },
+    [HouseStatus.MAINTENANCE]: { variant: 'warning' as const, icon: Settings, label: 'Maintenance' },
+    [HouseStatus.RESERVED]: { variant: 'accent' as const, icon: Clock, label: 'Réservé' },
+    [HouseStatus.OUT_OF_SERVICE]: { variant: 'error' as const, icon: AlertTriangle, label: 'Hors service' }
   };
 
   const config = statusConfig[status];
-  const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-      <Icon className="h-3 w-3 mr-1" />
-      {statusLabels[status]}
-    </span>
+    <Badge variant={config.variant} icon={config.icon}>
+      {config.label}
+    </Badge>
   );
 };
 
@@ -333,82 +325,55 @@ const HousesPage: React.FC = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-primary-100 rounded-lg">
-                  <Home className="w-6 h-6 text-primary-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Logements</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-success-100 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-success-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Disponibles</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.available}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-primary-100 rounded-lg">
-                  <User className="w-6 h-6 text-primary-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Occupés</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.occupied}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-warning-100 rounded-lg">
-                  <Settings className="w-6 h-6 text-warning-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Maintenance</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.maintenance}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-accent-100 rounded-lg">
-                  <div className="w-6 h-6 text-accent-600 text-lg">€</div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Revenus/mois</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {new Intl.NumberFormat('fr-FR', {
-                      style: 'currency',
-                      currency: 'EUR',
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    }).format(stats.revenue)}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <StatsCard
+              title="Total Logements"
+              value={stats.total}
+              icon={<Home className="w-6 h-6" />}
+              color="blue"
+            />
+            
+            <StatsCard
+              title="Disponibles"
+              value={stats.available}
+              icon={<CheckCircle className="w-6 h-6" />}
+              color="green"
+            />
+            
+            <StatsCard
+              title="Occupés"
+              value={stats.occupied}
+              icon={<User className="w-6 h-6" />}
+              color="blue"
+            />
+            
+            <StatsCard
+              title="Maintenance"
+              value={stats.maintenance}
+              icon={<Settings className="w-6 h-6" />}
+              color="yellow"
+            />
+            
+            <StatsCard
+              title="Revenus/mois"
+              value={new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(stats.revenue)}
+              icon={<Euro className="w-6 h-6" />}
+              color="purple"
+            />
           </div>
 
           {/* Filters */}
           <div className="bg-white rounded-lg shadow mb-6 p-4">
             <div className="flex items-center space-x-4">
               <label className="text-sm font-medium text-gray-700">Filtrer par statut:</label>
-              <select
+              <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as HouseStatus | 'ALL')}
-                className="rounded-md border border-gray-300 px-3 py-1 text-sm focus:border-primary-500 focus:ring-primary-500"
+                className="min-w-[160px]"
               >
                 <option value="ALL">Tous les statuts</option>
                 <option value="AVAILABLE">Disponible</option>
@@ -416,7 +381,7 @@ const HousesPage: React.FC = () => {
                 <option value="MAINTENANCE">Maintenance</option>
                 <option value="RESERVED">Réservé</option>
                 <option value="OUT_OF_SERVICE">Hors service</option>
-              </select>
+              </Select>
               <span className="text-sm text-gray-500">
                 {filteredHouses.length} logement{filteredHouses.length > 1 ? 's' : ''}
               </span>

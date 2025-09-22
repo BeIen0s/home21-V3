@@ -224,49 +224,63 @@ const UserManagementPage: React.FC = () => {
   };
 
   return (
-    <Layout title="Utilisateurs">
-      <div className="space-y-6">
+    <Layout
+      title="Pass21 - Gestion des Utilisateurs"
+      description="Gestion des utilisateurs et des permissions"
+      showNavbar={true}
+      showFooter={false}
+    >
+      <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
-            <p className="text-gray-600 mt-1">Gérez les comptes utilisateurs, rôles et permissions</p>
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
+                <p className="text-gray-600 mt-1">
+                  Gérer les utilisateurs, rôles et permissions du système
+                </p>
+              </div>
+              <Button
+                onClick={handleCreateUser}
+                className="inline-flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvel Utilisateur
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={handleCreateUser}
-            className="inline-flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvel utilisateur
-          </Button>
         </div>
 
-        <DataTable
-          data={users}
-          columns={columns}
-          actions={[
-            {
-              label: 'Voir',
-              onClick: handleViewUser,
-              variant: 'secondary'
-            },
-            {
-              label: 'Modifier',
-              onClick: handleEditUser,
-              variant: 'secondary'
-            },
-            {
-              label: 'Basculer',
-              onClick: handleToggleUserStatus,
-              variant: 'secondary'
-            },
-            {
-              label: 'Supprimer',
-              onClick: handleDeleteUser,
-              variant: 'outline'
-            }
-          ]}
-        />
+        {/* Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <DataTable
+            data={users}
+            columns={columns}
+            actions={[
+              {
+                label: 'Voir',
+                onClick: handleViewUser,
+                variant: 'secondary'
+              },
+              {
+                label: 'Modifier',
+                onClick: handleEditUser,
+                variant: 'secondary'
+              },
+              {
+                label: 'Basculer',
+                onClick: handleToggleUserStatus,
+                variant: 'secondary'
+              },
+              {
+                label: 'Supprimer',
+                onClick: handleDeleteUser,
+                variant: 'outline'
+              }
+            ]}
+          />
+        </main>
 
         {/* Edit Modal */}
         {isEditModalOpen && (

@@ -29,7 +29,8 @@ export const Layout: React.FC<LayoutProps> = ({
                       router.pathname.startsWith('/tasks') || 
                       router.pathname.startsWith('/services') || 
                       router.pathname.startsWith('/messages') || 
-                      router.pathname.startsWith('/settings');
+                      router.pathname.startsWith('/settings') ||
+                      router.pathname.startsWith('/admin');
   return (
     <>
       <Head>
