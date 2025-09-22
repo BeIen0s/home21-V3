@@ -7,7 +7,7 @@ const MessagesPage: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<string>();
 
   return (
-    <Layout title="Messages">
+    <Layout title="Messages" showFooter={false}>
       <div className="h-full flex">
         {/* Conversations sidebar */}
         <div className="w-1/3 min-w-[300px] max-w-md">
