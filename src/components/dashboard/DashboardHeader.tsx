@@ -1,8 +1,10 @@
 import React from 'react';
 import { Bell, Search, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/hooks/useAuth';
 
 export const DashboardHeader: React.FC = () => {
+  const { logout, user } = useAuth();
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,8 +48,8 @@ export const DashboardHeader: React.FC = () => {
             <div className="relative">
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <div className="text-sm font-medium text-gray-900">Marie Dubois</div>
-                  <div className="text-xs text-gray-500">Administratrice</div>
+                  <div className="text-sm font-medium text-gray-900">{user?.name ?? 'Utilisateur'}</div>
+                  <div className="text-xs text-gray-500">{user?.role ?? ''}</div>
                 </div>
                 <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
                   <User className="h-5 w-5 text-primary-600" />
@@ -58,6 +60,11 @@ export const DashboardHeader: React.FC = () => {
             {/* Settings */}
             <Button variant="ghost" size="sm">
               <Settings className="h-5 w-5" />
+            </Button>
+            {/* Logout */}
+            <Button variant="outline" size="sm" onClick={logout}>
+              <LogOut className="h-5 w-5 mr-2" />
+              Déconnexion
             </Button>
           </div>
         </div>
