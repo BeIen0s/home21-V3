@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -31,6 +32,15 @@ interface LoginError {
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
+  const { login: authLogin, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, router]);
+  
   const [formData, setFormData] = useState<LoginForm>({
     email: '',
     password: '',
@@ -154,39 +164,59 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      const result = await simulateLogin();
-      
-      if (result.success) {
-        if (result.requiresTwoFactor && !showTwoFactor) {
-          setShowTwoFactor(true);
-          setError(null);
-        } else if (result.user) {
-          // Simulate successful login
+      // For 2FA flow, we still need the custom logic
+      if (showTwoFactor) {
+        const result = await simulateLogin();
+        if (result.success && result.user) {
+          // Use the auth hook to set the user and redirect
           localStorage.setItem('user', JSON.stringify(result.user));
           router.push('/dashboard');
-        }
-        setLoginAttempts(0);
-      } else {
-        const newAttempts = loginAttempts + 1;
-        setLoginAttempts(newAttempts);
-        
-        if (newAttempts >= 5) {
-          setIsLocked(true);
-          setLockoutTime(new Date(Date.now() + 15 * 60 * 1000)); // 15 minutes lockout
-          setError({ 
-            field: 'general', 
-            message: 'Trop de tentatives échouées. Compte verrouillé pour 15 minutes.' 
-          });
-        } else if (showTwoFactor) {
+        } else {
           setError({ 
             field: 'twoFactor', 
             message: 'Code de vérification incorrect' 
           });
+        }
+      } else {
+        // Check if this user requires 2FA first
+        const result = await simulateLogin();
+        
+        if (result.success) {
+          if (result.requiresTwoFactor) {
+            setShowTwoFactor(true);
+            setError(null);
+          } else {
+            // Use the auth hook for regular login
+            const success = await authLogin(formData.email, formData.password);
+            if (success) {
+              router.push('/dashboard');
+            } else {
+              const newAttempts = loginAttempts + 1;
+              setLoginAttempts(newAttempts);
+              setError({ 
+                field: 'general', 
+                message: `Email ou mot de passe incorrect. ${5 - newAttempts} tentative${5 - newAttempts > 1 ? 's' : ''} restante${5 - newAttempts > 1 ? 's' : ''}` 
+              });
+            }
+          }
+          setLoginAttempts(0);
         } else {
-          setError({ 
-            field: 'general', 
-            message: `Email ou mot de passe incorrect. ${5 - newAttempts} tentative${5 - newAttempts > 1 ? 's' : ''} restante${5 - newAttempts > 1 ? 's' : ''}` 
-          });
+          const newAttempts = loginAttempts + 1;
+          setLoginAttempts(newAttempts);
+          
+          if (newAttempts >= 5) {
+            setIsLocked(true);
+            setLockoutTime(new Date(Date.now() + 15 * 60 * 1000)); // 15 minutes lockout
+            setError({ 
+              field: 'general', 
+              message: 'Trop de tentatives échouées. Compte verrouillé pour 15 minutes.' 
+            });
+          } else {
+            setError({ 
+              field: 'general', 
+              message: `Email ou mot de passe incorrect. ${5 - newAttempts} tentative${5 - newAttempts > 1 ? 's' : ''} restante${5 - newAttempts > 1 ? 's' : ''}` 
+            });
+          }
         }
       }
     } catch (err) {
@@ -209,6 +239,26 @@ const LoginPage: React.FC = () => {
     setFormData(prev => ({ ...prev, twoFactorCode: '' }));
     setError(null);
   };
+
+  // Show loading or redirect if already authenticated
+  if (authLoading) {
+    return (
+      <Layout
+        title="Pass21 - Connexion"
+        description="Connectez-vous à votre compte Pass21"
+        showNavbar={false}
+        showFooter={false}
+      >
+        <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <Layout
