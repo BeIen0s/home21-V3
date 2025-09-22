@@ -1,0 +1,679 @@
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import { Layout } from '@/components/layout/Layout';
+import { Button } from '@/components/ui/Button';
+import { FormInput } from '@/components/forms/FormInput';
+import { FormSelect } from '@/components/forms/FormSelect';
+import { FormTextarea } from '@/components/forms/FormTextarea';
+import { FormDatePicker } from '@/components/forms/FormDatePicker';
+import { FormCheckbox } from '@/components/forms/FormCheckbox';
+import { 
+  ArrowLeft, 
+  Save, 
+  Plus, 
+  Trash2,
+  AlertCircle,
+  CheckCircle
+} from 'lucide-react';
+import type { Gender, ResidentStatus, EmergencyContact, MedicalInfo, Medication } from '@/types';
+
+// Types for form data
+interface ResidentFormData {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: Gender | '';
+  status: ResidentStatus | '';
+  houseId: string;
+  moveInDate: string;
+  emergencyContact: EmergencyContact;
+  medicalInfo?: {
+    allergies: string[];
+    conditions: string[];
+    medications: Medication[];
+    emergencyInstructions: string;
+  };
+}
+
+interface FormErrors {
+  [key: string]: string;
+}
+
+const initialFormData: ResidentFormData = {
+  firstName: '',
+  lastName: '',
+  dateOfBirth: '',
+  gender: '',
+  status: 'WAITING_LIST',
+  houseId: '',
+  moveInDate: '',
+  emergencyContact: {
+    name: '',
+    relationship: '',
+    phone: '',
+    email: ''
+  },
+  medicalInfo: {
+    allergies: [],
+    conditions: [],
+    medications: [],
+    emergencyInstructions: ''
+  }
+};
+
+// Mock data for houses
+const availableHouses = [
+  { value: '', label: 'Sélectionnez un logement' },
+  { value: '1A', label: 'Maison 1A' },
+  { value: '2B', label: 'Maison 2B' },
+  { value: '3C', label: 'Maison 3C' },
+  { value: '4D', label: 'Maison 4D' },
+  { value: '5E', label: 'Maison 5E' }
+];
+
+const genderOptions = [
+  { value: '', label: 'Sélectionnez le genre' },
+  { value: 'MALE', label: 'Masculin' },
+  { value: 'FEMALE', label: 'Féminin' }
+];
+
+const statusOptions = [
+  { value: 'WAITING_LIST', label: 'Liste d\'attente' },
+  { value: 'ACTIVE', label: 'Actif' },
+  { value: 'TEMPORARY_LEAVE', label: 'Congé temporaire' },
+  { value: 'MOVED_OUT', label: 'Déménagé' },
+  { value: 'DECEASED', label: 'Décédé' }
+];
+
+const relationshipOptions = [
+  { value: '', label: 'Sélectionnez la relation' },
+  { value: 'Époux/Épouse', label: 'Époux/Épouse' },
+  { value: 'Fils', label: 'Fils' },
+  { value: 'Fille', label: 'Fille' },
+  { value: 'Frère', label: 'Frère' },
+  { value: 'Sœur', label: 'Sœur' },
+  { value: 'Ami(e)', label: 'Ami(e)' },
+  { value: 'Autre', label: 'Autre' }
+];
+
+const NewResidentPage: React.FC = () => {
+  const router = useRouter();
+  const [formData, setFormData] = useState<ResidentFormData>(initialFormData);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [newAllergy, setNewAllergy] = useState('');
+  const [newCondition, setNewCondition] = useState('');
+
+  // Validation functions
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'Le prénom est requis';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Le nom est requis';
+    }
+
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'La date de naissance est requise';
+    } else {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      if (birthDate > today) {
+        newErrors.dateOfBirth = 'La date de naissance ne peut pas être dans le futur';
+      }
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = 'Le genre est requis';
+    }
+
+    if (!formData.emergencyContact.name.trim()) {
+      newErrors['emergencyContact.name'] = 'Le nom du contact d\'urgence est requis';
+    }
+
+    if (!formData.emergencyContact.relationship.trim()) {
+      newErrors['emergencyContact.relationship'] = 'La relation est requise';
+    }
+
+    if (!formData.emergencyContact.phone.trim()) {
+      newErrors['emergencyContact.phone'] = 'Le téléphone est requis';
+    } else if (!/^[0-9\s\-\+\(\)]{10,}$/.test(formData.emergencyContact.phone)) {
+      newErrors['emergencyContact.phone'] = 'Format de téléphone invalide';
+    }
+
+    if (formData.emergencyContact.email && 
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emergencyContact.email)) {
+      newErrors['emergencyContact.email'] = 'Format d\'email invalide';
+    }
+
+    if (formData.moveInDate) {
+      const moveInDate = new Date(formData.moveInDate);
+      const birthDate = new Date(formData.dateOfBirth);
+      if (moveInDate < birthDate) {
+        newErrors.moveInDate = 'La date d\'entrée ne peut pas être antérieure à la naissance';
+      }
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newErrors = validateForm();
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log('Form submitted:', formData);
+      setSubmitStatus('success');
+      
+      // Redirect after success
+      setTimeout(() => {
+        router.push('/residents');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const updateFormData = (field: string, value: any) => {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      setFormData(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent as keyof ResidentFormData],
+          [child]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
+    
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const addAllergy = () => {
+    if (newAllergy.trim() && !formData.medicalInfo?.allergies.includes(newAllergy.trim())) {
+      updateFormData('medicalInfo', {
+        ...formData.medicalInfo,
+        allergies: [...(formData.medicalInfo?.allergies || []), newAllergy.trim()]
+      });
+      setNewAllergy('');
+    }
+  };
+
+  const removeAllergy = (allergy: string) => {
+    updateFormData('medicalInfo', {
+      ...formData.medicalInfo,
+      allergies: formData.medicalInfo?.allergies.filter(a => a !== allergy) || []
+    });
+  };
+
+  const addCondition = () => {
+    if (newCondition.trim() && !formData.medicalInfo?.conditions.includes(newCondition.trim())) {
+      updateFormData('medicalInfo', {
+        ...formData.medicalInfo,
+        conditions: [...(formData.medicalInfo?.conditions || []), newCondition.trim()]
+      });
+      setNewCondition('');
+    }
+  };
+
+  const removeCondition = (condition: string) => {
+    updateFormData('medicalInfo', {
+      ...formData.medicalInfo,
+      conditions: formData.medicalInfo?.conditions.filter(c => c !== condition) || []
+    });
+  };
+
+  const addMedication = () => {
+    const newMedication: Medication = {
+      name: '',
+      dosage: '',
+      frequency: '',
+      startDate: new Date(),
+      prescribedBy: ''
+    };
+    
+    updateFormData('medicalInfo', {
+      ...formData.medicalInfo,
+      medications: [...(formData.medicalInfo?.medications || []), newMedication]
+    });
+  };
+
+  const updateMedication = (index: number, field: keyof Medication, value: any) => {
+    const medications = [...(formData.medicalInfo?.medications || [])];
+    medications[index] = { ...medications[index], [field]: value };
+    
+    updateFormData('medicalInfo', {
+      ...formData.medicalInfo,
+      medications
+    });
+  };
+
+  const removeMedication = (index: number) => {
+    const medications = formData.medicalInfo?.medications.filter((_, i) => i !== index) || [];
+    updateFormData('medicalInfo', {
+      ...formData.medicalInfo,
+      medications
+    });
+  };
+
+  return (
+    <Layout
+      title="Pass21 - Nouveau Résident"
+      description="Ajouter un nouveau résident à la résidence Pass21"
+      showNavbar={true}
+      showFooter={false}
+    >
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => router.push('/residents')}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Retour
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Nouveau Résident</h1>
+                  <p className="text-gray-600 mt-1">
+                    Ajouter un nouveau résident à la résidence Pass21
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Personal Information */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-6">Informations personnelles</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormInput
+                  id="firstName"
+                  label="Prénom"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(value) => updateFormData('firstName', value)}
+                  required
+                  error={errors.firstName}
+                />
+
+                <FormInput
+                  id="lastName"
+                  label="Nom"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(value) => updateFormData('lastName', value)}
+                  required
+                  error={errors.lastName}
+                />
+
+                <FormDatePicker
+                  id="dateOfBirth"
+                  label="Date de naissance"
+                  value={formData.dateOfBirth}
+                  onChange={(value) => updateFormData('dateOfBirth', value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  required
+                  error={errors.dateOfBirth}
+                />
+
+                <FormSelect
+                  id="gender"
+                  label="Genre"
+                  value={formData.gender}
+                  onChange={(value) => updateFormData('gender', value)}
+                  options={genderOptions}
+                  required
+                  error={errors.gender}
+                />
+              </div>
+            </div>
+
+            {/* Housing Information */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-6">Logement</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormSelect
+                  id="houseId"
+                  label="Logement"
+                  value={formData.houseId}
+                  onChange={(value) => updateFormData('houseId', value)}
+                  options={availableHouses}
+                  error={errors.houseId}
+                />
+
+                <FormDatePicker
+                  id="moveInDate"
+                  label="Date d'entrée"
+                  value={formData.moveInDate}
+                  onChange={(value) => updateFormData('moveInDate', value)}
+                  error={errors.moveInDate}
+                />
+
+                <FormSelect
+                  id="status"
+                  label="Statut"
+                  value={formData.status}
+                  onChange={(value) => updateFormData('status', value)}
+                  options={statusOptions}
+                  required
+                  error={errors.status}
+                />
+              </div>
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-6">Contact d'urgence</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormInput
+                  id="emergencyContact.name"
+                  label="Nom complet"
+                  type="text"
+                  value={formData.emergencyContact.name}
+                  onChange={(value) => updateFormData('emergencyContact.name', value)}
+                  required
+                  error={errors['emergencyContact.name']}
+                />
+
+                <FormSelect
+                  id="emergencyContact.relationship"
+                  label="Relation"
+                  value={formData.emergencyContact.relationship}
+                  onChange={(value) => updateFormData('emergencyContact.relationship', value)}
+                  options={relationshipOptions}
+                  required
+                  error={errors['emergencyContact.relationship']}
+                />
+
+                <FormInput
+                  id="emergencyContact.phone"
+                  label="Téléphone"
+                  type="tel"
+                  value={formData.emergencyContact.phone}
+                  onChange={(value) => updateFormData('emergencyContact.phone', value)}
+                  required
+                  error={errors['emergencyContact.phone']}
+                />
+
+                <FormInput
+                  id="emergencyContact.email"
+                  label="Email"
+                  type="email"
+                  value={formData.emergencyContact.email || ''}
+                  onChange={(value) => updateFormData('emergencyContact.email', value)}
+                  error={errors['emergencyContact.email']}
+                />
+              </div>
+            </div>
+
+            {/* Medical Information */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-6">Informations médicales (optionnel)</h2>
+              
+              {/* Emergency Instructions */}
+              <div className="mb-6">
+                <FormTextarea
+                  id="emergencyInstructions"
+                  label="Instructions d'urgence"
+                  value={formData.medicalInfo?.emergencyInstructions || ''}
+                  onChange={(value) => updateFormData('medicalInfo', {
+                    ...formData.medicalInfo,
+                    emergencyInstructions: value
+                  })}
+                  placeholder="Informations importantes en cas d'urgence médicale..."
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+
+              {/* Allergies */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">Allergies</label>
+                
+                <div className="flex gap-2 mb-3">
+                  <FormInput
+                    id="newAllergy"
+                    label=""
+                    type="text"
+                    value={newAllergy}
+                    onChange={setNewAllergy}
+                    placeholder="Ajouter une allergie..."
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    onClick={addAllergy}
+                    disabled={!newAllergy.trim()}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {formData.medicalInfo?.allergies.map((allergy, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      {allergy}
+                      <button
+                        type="button"
+                        onClick={() => removeAllergy(allergy)}
+                        className="ml-2 text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Medical Conditions */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">Conditions médicales</label>
+                
+                <div className="flex gap-2 mb-3">
+                  <FormInput
+                    id="newCondition"
+                    label=""
+                    type="text"
+                    value={newCondition}
+                    onChange={setNewCondition}
+                    placeholder="Ajouter une condition médicale..."
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    onClick={addCondition}
+                    disabled={!newCondition.trim()}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {formData.medicalInfo?.conditions.map((condition, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      {condition}
+                      <button
+                        type="button"
+                        onClick={() => removeCondition(condition)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Medications */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-gray-700">Médicaments</label>
+                  <Button type="button" variant="ghost" onClick={addMedication}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ajouter un médicament
+                  </Button>
+                </div>
+                
+                <div className="space-y-4">
+                  {formData.medicalInfo?.medications.map((medication, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-sm font-medium text-gray-900">Médicament {index + 1}</h4>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeMedication(index)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormInput
+                          id={`medication-${index}-name`}
+                          label="Nom du médicament"
+                          type="text"
+                          value={medication.name}
+                          onChange={(value) => updateMedication(index, 'name', value)}
+                        />
+                        
+                        <FormInput
+                          id={`medication-${index}-dosage`}
+                          label="Dosage"
+                          type="text"
+                          value={medication.dosage}
+                          onChange={(value) => updateMedication(index, 'dosage', value)}
+                          placeholder="ex: 500mg"
+                        />
+                        
+                        <FormInput
+                          id={`medication-${index}-frequency`}
+                          label="Fréquence"
+                          type="text"
+                          value={medication.frequency}
+                          onChange={(value) => updateMedication(index, 'frequency', value)}
+                          placeholder="ex: 2x/jour"
+                        />
+                        
+                        <FormInput
+                          id={`medication-${index}-prescribedBy`}
+                          label="Prescrit par"
+                          type="text"
+                          value={medication.prescribedBy}
+                          onChange={(value) => updateMedication(index, 'prescribedBy', value)}
+                          placeholder="Dr. Nom"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-4 bg-white rounded-lg shadow p-6">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => router.push('/residents')}
+                disabled={isSubmitting}
+              >
+                Annuler
+              </Button>
+              
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="min-w-[120px]"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Enregistrement...
+                  </div>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Enregistrer
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Success/Error Messages */}
+            {submitStatus === 'success' && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                <div>
+                  <h3 className="text-sm font-medium text-green-800">Résident créé avec succès!</h3>
+                  <p className="text-sm text-green-700 mt-1">Redirection vers la liste des résidents...</p>
+                </div>
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">Erreur lors de l'enregistrement</h3>
+                  <p className="text-sm text-red-700 mt-1">Veuillez réessayer ou contacter le support.</p>
+                </div>
+              </div>
+            )}
+          </form>
+        </main>
+      </div>
+    </Layout>
+  );
+};
+
+export default NewResidentPage;

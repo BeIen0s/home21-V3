@@ -67,6 +67,7 @@ export const QuickActions: React.FC = () => {
             return (
               <button
                 key={action.id}
+                onClick={() => window.location.href = action.href}
                 className="group relative bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               >
                 <div className="flex flex-col items-center text-center space-y-3">

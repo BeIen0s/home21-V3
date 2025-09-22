@@ -1,6 +1,8 @@
 import React from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { Navbar } from './Navbar';
+import { AdminNav } from './AdminNav';
 import { Footer } from './Footer';
 
 interface LayoutProps {
@@ -18,6 +20,16 @@ export const Layout: React.FC<LayoutProps> = ({
   showNavbar = true,
   showFooter = true,
 }) => {
+  const router = useRouter();
+  
+  // Check if we're on an admin page
+  const isAdminPage = router.pathname.startsWith('/dashboard') || 
+                      router.pathname.startsWith('/residents') || 
+                      router.pathname.startsWith('/houses') || 
+                      router.pathname.startsWith('/tasks') || 
+                      router.pathname.startsWith('/services') || 
+                      router.pathname.startsWith('/messages') || 
+                      router.pathname.startsWith('/settings');
   return (
     <>
       <Head>
@@ -28,7 +40,8 @@ export const Layout: React.FC<LayoutProps> = ({
       </Head>
 
       <div className="min-h-screen bg-white flex flex-col">
-        {showNavbar && <Navbar />}
+        {showNavbar && !isAdminPage && <Navbar />}
+        {isAdminPage && <AdminNav />}
         
         <main className="flex-1">
           {children}
