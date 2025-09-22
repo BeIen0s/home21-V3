@@ -1,24 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
-import { Hero } from '@/components/home/Hero';
-import { Features } from '@/components/home/Features';
-import { Stats } from '@/components/home/Stats';
-import { Testimonials } from '@/components/home/Testimonials';
-import { Pricing } from '@/components/home/Pricing';
-import { CTA } from '@/components/home/CTA';
 
 const HomePage: React.FC = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to dashboard for Pass21 residence management
+    router.push('/dashboard');
+  }, [router]);
+
   return (
     <Layout
-      title="Home21 V3 - Modern SaaS Platform"
-      description="Streamline your workflow and boost productivity with our comprehensive suite of tools. Built for the modern business."
+      title="Pass21 - Gestion de Résidence"
+      description="Système de gestion moderne pour la résidence Pass21"
     >
-      <Hero />
-      <Stats />
-      <Features />
-      <Testimonials />
-      <Pricing />
-      <CTA />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="h-16 w-16 bg-primary-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
+            <span className="text-white font-bold text-2xl">P</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Pass21</h1>
+          <p className="text-gray-600">Redirection vers le tableau de bord...</p>
+        </div>
+      </div>
     </Layout>
   );
 };
