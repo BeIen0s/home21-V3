@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 import { Menu, X, User, LogOut } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { user, isLoading } = useUser();
+  const { user, isLoading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
@@ -57,22 +57,19 @@ export const Navbar: React.FC = () => {
                     Dashboard
                   </Button>
                 </Link>
-                <Link href="/api/auth/logout">
+                <Link href="/logout">
                   <Button variant="outline" size="sm">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    Déconnexion
                   </Button>
                 </Link>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link href="/api/auth/login">
+                <Link href="/login">
                   <Button variant="ghost" size="sm">
-                    Login
+                    Connexion
                   </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm">Get Started</Button>
                 </Link>
               </div>
             )}
@@ -124,29 +121,22 @@ export const Navbar: React.FC = () => {
                     Dashboard
                   </Link>
                   <Link
-                    href="/api/auth/logout"
+                    href="/logout"
                     className="flex items-center text-secondary-600 hover:text-secondary-900 px-3 py-2 rounded-md text-base font-medium"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    Déconnexion
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <Link
-                    href="/api/auth/login"
+                    href="/login"
                     className="block text-secondary-600 hover:text-secondary-900 px-3 py-2 rounded-md text-base font-medium"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="block bg-primary-600 text-white px-3 py-2 rounded-md text-base font-medium hover:bg-primary-700"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Get Started
+                    Connexion
                   </Link>
                 </div>
               )}
