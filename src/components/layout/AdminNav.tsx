@@ -26,6 +26,12 @@ const navigation: NavItem[] = [
     description: 'Vue d\'ensemble'
   },
   {
+    name: 'Utilisateurs',
+    href: '/admin/users',
+    icon: Users,
+    description: 'Gestion des utilisateurs'
+  },
+  {
     name: 'Résidents',
     href: '/residents',
     icon: Users,

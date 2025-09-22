@@ -22,7 +22,13 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
   STAFF = 'STAFF',
+  NURSE = 'NURSE',
+  CAREGIVER = 'CAREGIVER',
   RESIDENT = 'RESIDENT',
+  FAMILY = 'FAMILY',
+  VISITOR = 'VISITOR',
+  CONTRACTOR = 'CONTRACTOR',
+  VOLUNTEER = 'VOLUNTEER',
 }
 
 // Resident Types
@@ -599,4 +605,202 @@ export interface SearchFilters {
   dateTo?: string;
   assignedTo?: string;
   [key: string]: any;
+}
+
+// =============================================================================
+// PERMISSION & ROLE MANAGEMENT SYSTEM
+// =============================================================================
+
+// Permission System
+export interface Permission {
+  id: string;
+  name: string;
+  description: string;
+  resource: ResourceType;
+  action: ActionType;
+  scope?: PermissionScope;
+  conditions?: Record<string, any>;
+}
+
+export enum ResourceType {
+  // Core Resources
+  USER = 'USER',
+  RESIDENT = 'RESIDENT',
+  HOUSE = 'HOUSE',
+  TASK = 'TASK',
+  SERVICE = 'SERVICE',
+  MESSAGE = 'MESSAGE',
+  DOCUMENT = 'DOCUMENT',
+  NOTIFICATION = 'NOTIFICATION',
+  
+  // Administrative
+  DASHBOARD = 'DASHBOARD',
+  REPORTS = 'REPORTS',
+  SETTINGS = 'SETTINGS',
+  AUDIT = 'AUDIT',
+  
+  // Medical & Care
+  MEDICAL_INFO = 'MEDICAL_INFO',
+  CARE_PLAN = 'CARE_PLAN',
+  
+  // Financial
+  BILLING = 'BILLING',
+  PAYMENT = 'PAYMENT',
+  
+  // System
+  SYSTEM = 'SYSTEM',
+  BACKUP = 'BACKUP',
+}
+
+export enum ActionType {
+  CREATE = 'CREATE',
+  READ = 'READ',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  ASSIGN = 'ASSIGN',
+  APPROVE = 'APPROVE',
+  REJECT = 'REJECT',
+  EXPORT = 'EXPORT',
+  IMPORT = 'IMPORT',
+  ARCHIVE = 'ARCHIVE',
+  RESTORE = 'RESTORE',
+  MANAGE = 'MANAGE',
+}
+
+export enum PermissionScope {
+  ALL = 'ALL',           // All records
+  OWN = 'OWN',          // Only own records
+  ASSIGNED = 'ASSIGNED', // Only assigned records
+  DEPARTMENT = 'DEPARTMENT', // Same department
+  FLOOR = 'FLOOR',      // Same floor residents
+}
+
+// Role System
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  level: number; // Hierarchy level (higher = more permissions)
+  permissions: Permission[];
+  isSystemRole: boolean; // Cannot be deleted
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Extended User with Permissions
+export interface ExtendedUser extends User {
+  roles: Role[];
+  permissions: Permission[]; // Direct permissions (in addition to role permissions)
+  department?: string;
+  position?: string;
+  supervisor?: string; // User ID of supervisor
+  managedUsers?: string[]; // User IDs of managed users
+  accessLevel: AccessLevel;
+  canAccessAfterHours: boolean;
+  maxSessionDuration?: number; // in minutes
+  mustChangePassword?: boolean;
+  twoFactorEnabled: boolean;
+  lastPasswordChange?: Date;
+  failedLoginAttempts: number;
+  accountLockedUntil?: Date;
+}
+
+export enum AccessLevel {
+  BASIC = 'BASIC',
+  ELEVATED = 'ELEVATED',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
+// User Management Forms
+export interface UserForm {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: UserRole;
+  roles?: string[]; // Role IDs
+  department?: string;
+  position?: string;
+  supervisor?: string;
+  accessLevel: AccessLevel;
+  canAccessAfterHours: boolean;
+  maxSessionDuration?: number;
+  twoFactorEnabled: boolean;
+  permissions?: string[]; // Direct permission IDs
+}
+
+export interface RoleForm {
+  name: string;
+  description: string;
+  level: number;
+  permissions: string[]; // Permission IDs
+  isActive: boolean;
+}
+
+// Permission Groups for UI organization
+export interface PermissionGroup {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  icon?: string;
+  color?: string;
+}
+
+// Audit & Activity Tracking for User Management
+export interface UserAuditLog {
+  id: string;
+  userId: string;
+  actionBy: string; // Admin who performed the action
+  action: UserAuditAction;
+  resource: string;
+  resourceId: string;
+  previousValue?: Record<string, any>;
+  newValue?: Record<string, any>;
+  ipAddress: string;
+  userAgent: string;
+  timestamp: Date;
+}
+
+export enum UserAuditAction {
+  USER_CREATED = 'USER_CREATED',
+  USER_UPDATED = 'USER_UPDATED',
+  USER_DELETED = 'USER_DELETED',
+  USER_ACTIVATED = 'USER_ACTIVATED',
+  USER_DEACTIVATED = 'USER_DEACTIVATED',
+  ROLE_ASSIGNED = 'ROLE_ASSIGNED',
+  ROLE_REMOVED = 'ROLE_REMOVED',
+  PERMISSION_GRANTED = 'PERMISSION_GRANTED',
+  PERMISSION_REVOKED = 'PERMISSION_REVOKED',
+  PASSWORD_RESET = 'PASSWORD_RESET',
+  ACCOUNT_LOCKED = 'ACCOUNT_LOCKED',
+  ACCOUNT_UNLOCKED = 'ACCOUNT_UNLOCKED',
+  LOGIN_SUCCESS = 'LOGIN_SUCCESS',
+  LOGIN_FAILED = 'LOGIN_FAILED',
+}
+
+// System Configuration for User Management
+export interface UserManagementConfig {
+  passwordPolicy: {
+    minLength: number;
+    requireUppercase: boolean;
+    requireLowercase: boolean;
+    requireNumbers: boolean;
+    requireSymbols: boolean;
+    preventReuse: number; // Number of previous passwords to prevent reuse
+    maxAge: number; // Days before password expires
+  };
+  sessionPolicy: {
+    maxDuration: number; // Default max session duration in minutes
+    idleTimeout: number; // Minutes of inactivity before logout
+    maxConcurrentSessions: number;
+  };
+  accountPolicy: {
+    maxFailedAttempts: number;
+    lockoutDuration: number; // Minutes
+    requireEmailVerification: boolean;
+    require2FA: UserRole[]; // Roles that require 2FA
+  };
 }
