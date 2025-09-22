@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
-import { UserEditModal } from '@/components/admin/UserEditModal';
 import { Button } from '@/components/ui/Button';
+import { StatsCard } from '@/components/ui';
+import { Plus, Eye, Edit, Shield, Clock, Users, UserCheck, UserX, Settings, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { UserEditModal } from '@/components/admin/UserEditModal';
 import { ExtendedUser, UserRole, AccessLevel, TableColumn } from '@/types';
 import { mockExtendedUsers } from '@/data/mockUserManagement';
-import { Plus, Eye, Edit, Trash2, Shield, Users as UsersIcon, Clock, ToggleLeft, ToggleRight } from 'lucide-react';
 
 // Helper functions
 const getRoleColor = (role: UserRole) => {
@@ -223,11 +224,20 @@ const UserManagementPage: React.FC = () => {
     setIsEditModalOpen(false);
   };
 
+  // Calculer les statistiques
+  const stats = {
+    total: users.length,
+    active: users.filter(u => u.isActive).length,
+    inactive: users.filter(u => !u.isActive).length,
+    admins: users.filter(u => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN').length,
+    twoFactorEnabled: users.filter(u => u.twoFactorEnabled).length
+  };
+
   return (
     <Layout
       title="Pass21 - Gestion des Utilisateurs"
       description="Gestion des utilisateurs et des permissions"
-      showNavbar={true}
+      showNavbar={false}
       showFooter={false}
     >
       <div className="min-h-screen bg-gray-50">
@@ -254,6 +264,43 @@ const UserManagementPage: React.FC = () => {
 
         {/* Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <StatsCard
+              title="Total Utilisateurs"
+              value={stats.total}
+              icon={<Users className="w-6 h-6" />}
+              color="blue"
+            />
+            
+            <StatsCard
+              title="Utilisateurs Actifs"
+              value={stats.active}
+              icon={<UserCheck className="w-6 h-6" />}
+              color="green"
+            />
+            
+            <StatsCard
+              title="Utilisateurs Inactifs"
+              value={stats.inactive}
+              icon={<UserX className="w-6 h-6" />}
+              color="red"
+            />
+            
+            <StatsCard
+              title="Administrateurs"
+              value={stats.admins}
+              icon={<Shield className="w-6 h-6" />}
+              color="purple"
+            />
+            
+            <StatsCard
+              title="2FA Activé"
+              value={stats.twoFactorEnabled}
+              icon={<Settings className="w-6 h-6" />}
+              color="yellow"
+            />
+          </div>
           <DataTable
             data={users}
             columns={columns}
