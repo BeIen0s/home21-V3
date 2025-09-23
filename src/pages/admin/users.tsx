@@ -166,10 +166,6 @@ const UserManagementPage: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleViewUser = (user: ExtendedUser) => {
-    console.log('Voir utilisateur:', user.id);
-    // TODO: Navigate to user detail page
-  };
 
   const handleEditUser = (user: ExtendedUser) => {
     setSelectedUser(user);
@@ -320,11 +316,6 @@ const UserManagementPage: React.FC = () => {
             data={users}
             columns={columns}
             actions={[
-              {
-                label: 'Voir',
-                onClick: handleViewUser,
-                variant: 'secondary'
-              },
               {
                 label: 'Modifier',
                 onClick: handleEditUser,
