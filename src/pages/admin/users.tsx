@@ -3,7 +3,7 @@ import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
 import { StatsCard } from '@/components/ui';
-import { Plus, Eye, Edit, Shield, Clock, Users, UserCheck, UserX, Settings, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Eye, Edit, Shield, Users, UserCheck, UserX, Settings, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { UserEditModal } from '@/components/admin/UserEditModal';
 import { ExtendedUser, UserRole, AccessLevel, TableColumn } from '@/types';
@@ -22,32 +22,6 @@ const getRoleColor = (role: UserRole) => {
   return colors[role] || 'bg-gray-100 text-gray-800';
 };
 
-const formatLastLogin = (date?: Date | string) => {
-  if (!date) return 'Jamais';
-  
-  // S'assurer que date est un objet Date
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(dateObj.getTime())) return 'Jamais';
-  
-  const now = new Date();
-  const diff = now.getTime() - dateObj.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  if (days === 0) {
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    if (hours === 0) {
-      const minutes = Math.floor(diff / (1000 * 60));
-      return `Il y a ${minutes} min`;
-    }
-    return `Il y a ${hours}h`;
-  } else if (days === 1) {
-    return 'Hier';
-  } else if (days < 7) {
-    return `Il y a ${days} jours`;
-  } else {
-    return dateObj.toLocaleDateString('fr-FR');
-  }
-};
 
 const UserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<ExtendedUser[]>([]);
@@ -120,42 +94,6 @@ const UserManagementPage: React.FC = () => {
               Superviseur: {users.find(u => u.id === user.supervisor)?.firstName} {users.find(u => u.id === user.supervisor)?.lastName}
             </div>
           )}
-        </div>
-      )
-    },
-    {
-      key: 'status',
-      title: 'Statut',
-      render: (_, user) => (
-        <div>
-          <div className="flex items-center">
-            <div className={`w-2 h-2 rounded-full mr-2 ${user.isActive ? 'bg-green-400' : 'bg-red-400'}`} />
-            <span className={`text-sm ${user.isActive ? 'text-green-800' : 'text-red-800'}`}>
-              {user.isActive ? 'Actif' : 'Inactif'}
-            </span>
-          </div>
-          <div className="flex flex-col mt-1">
-            {user.twoFactorEnabled && (
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full inline-block mb-1">
-                2FA
-              </span>
-            )}
-            {user.canAccessAfterHours && (
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                24/7
-              </span>
-            )}
-          </div>
-        </div>
-      )
-    },
-    {
-      key: 'lastLogin',
-      title: 'Dernière connexion',
-      render: (_, user) => (
-        <div className="flex items-center text-sm text-gray-900">
-          <Clock className="w-4 h-4 mr-1 text-gray-400" />
-          {formatLastLogin(user.lastLogin)}
         </div>
       )
     }
