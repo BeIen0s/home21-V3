@@ -95,6 +95,12 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
       }
     }
     
+    // Pour les nouveaux utilisateurs, vérifier qu'un mot de passe est fourni (optionnel)
+    if (canSetPassword && !user && !formData.password) {
+      // Mot de passe optionnel même pour les nouveaux utilisateurs
+      // L'utilisateur recevra un email pour définir son mot de passe
+    }
+    
     const selectedRoleObjects = mockRoles.filter(role => 
       formData.selectedRoles.includes(role.id)
     );
@@ -197,8 +203,8 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
                 </div>
               )}
               
-              {/* Champs mot de passe pour admin/super admin lors de la création */}
-              {canSetPassword && !user && (
+              {/* Champs mot de passe pour admin/super admin */}
+              {canSetPassword && (
                 <>
                   <div className="relative">
                     <Input
@@ -206,7 +212,7 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="Définir le mot de passe initial"
+                      placeholder={user ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Définir le mot de passe initial'}
                     />
                     <button
                       type="button"
@@ -237,7 +243,10 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
                   <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
                     <p className="text-sm text-blue-700">
                       <Key className="inline w-4 h-4 mr-1" />
-                      Définissez un mot de passe initial pour l'utilisateur. Il pourra le modifier après sa première connexion.
+                      {user 
+                        ? 'Modifiez le mot de passe de l\'utilisateur. Laissez vide pour conserver le mot de passe actuel.' 
+                        : 'Définissez un mot de passe initial pour l\'utilisateur. Il pourra le modifier après sa première connexion.'
+                      }
                     </p>
                   </div>
                 </>
