@@ -26,7 +26,8 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Vérifier si l'utilisateur actuel peut définir des mots de passe
-  const canSetPassword = currentUser?.role === UserRole.SUPER_ADMIN || currentUser?.role === UserRole.ADMIN;
+  const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN' || 
+                         currentUser?.role === UserRole.SUPER_ADMIN || currentUser?.role === UserRole.ADMIN;
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -187,6 +188,15 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 value={formData.phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               />
+              
+              {/* Debug info - à supprimer plus tard */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="bg-gray-100 p-2 rounded text-xs">
+                  <p>Role: {currentUser?.role}</p>
+                  <p>Can set password: {canSetPassword ? 'Oui' : 'Non'}</p>
+                  <p>Is creating: {!user ? 'Oui' : 'Non'}</p>
+                </div>
+              )}
               
               {/* Champs mot de passe pour admin/super admin lors de la création */}
               {canSetPassword && !user && (
