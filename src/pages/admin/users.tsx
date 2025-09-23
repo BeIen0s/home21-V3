@@ -22,10 +22,15 @@ const getRoleColor = (role: UserRole) => {
   return colors[role] || 'bg-gray-100 text-gray-800';
 };
 
-const formatLastLogin = (date?: Date) => {
+const formatLastLogin = (date?: Date | string) => {
   if (!date) return 'Jamais';
+  
+  // S'assurer que date est un objet Date
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return 'Jamais';
+  
   const now = new Date();
-  const diff = now.getTime() - date.getTime();
+  const diff = now.getTime() - dateObj.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   
   if (days === 0) {
@@ -40,7 +45,7 @@ const formatLastLogin = (date?: Date) => {
   } else if (days < 7) {
     return `Il y a ${days} jours`;
   } else {
-    return date.toLocaleDateString('fr-FR');
+    return dateObj.toLocaleDateString('fr-FR');
   }
 };
 

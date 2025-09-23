@@ -14,7 +14,16 @@ export class StorageService {
     if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(STORAGE_KEYS.users);
-      return data ? JSON.parse(data) : [];
+      if (!data) return [];
+      
+      const users = JSON.parse(data);
+      // Convertir les dates string en objets Date
+      return users.map((user: any) => ({
+        ...user,
+        createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
+        updatedAt: user.updatedAt ? new Date(user.updatedAt) : new Date(),
+        lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined
+      }));
     } catch (error) {
       console.error('Error reading users from storage:', error);
       return [];
@@ -38,9 +47,21 @@ export class StorageService {
 
   static updateUser(userId: string, userData: Partial<ExtendedUser>): void {
     const users = this.getUsers();
-    const updatedUsers = users.map(u => 
-      u.id === userId ? { ...u, ...userData, updatedAt: new Date() } : u
-    );
+    const updatedUsers = users.map(u => {
+      if (u.id === userId) {
+        return { 
+          ...u, 
+          ...userData, 
+          updatedAt: new Date(),
+          // S'assurer que les dates sont des objets Date
+          createdAt: u.createdAt instanceof Date ? u.createdAt : new Date(u.createdAt || Date.now()),
+          lastLogin: userData.lastLogin ? 
+            (userData.lastLogin instanceof Date ? userData.lastLogin : new Date(userData.lastLogin)) : 
+            u.lastLogin
+        };
+      }
+      return u;
+    });
     this.saveUsers(updatedUsers);
   }
 
