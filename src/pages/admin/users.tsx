@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
@@ -8,6 +8,7 @@ import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { UserEditModal } from '@/components/admin/UserEditModal';
 import { ExtendedUser, UserRole, AccessLevel, TableColumn } from '@/types';
 import { mockExtendedUsers } from '@/data/mockUserManagement';
+import { StorageService } from '@/services/storageService';
 
 // Helper functions
 const getRoleColor = (role: UserRole) => {
@@ -44,10 +45,23 @@ const formatLastLogin = (date?: Date) => {
 };
 
 const UserManagementPage: React.FC = () => {
-  const [users, setUsers] = useState<ExtendedUser[]>(mockExtendedUsers);
+  const [users, setUsers] = useState<ExtendedUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { confirm, ConfirmDialog } = useConfirmDialog();
+
+  // Charger les utilisateurs depuis le stockage local au chargement
+  useEffect(() => {
+    StorageService.initializeDefaultData();
+    const storedUsers = StorageService.getUsers();
+    if (storedUsers.length > 0) {
+      setUsers(storedUsers);
+    } else {
+      // Si pas d'utilisateurs stockés, utiliser les données mock par défaut
+      setUsers(mockExtendedUsers);
+      StorageService.saveUsers(mockExtendedUsers);
+    }
+  }, []);
 
   // Define table columns
   const columns: TableColumn<ExtendedUser>[] = [
@@ -165,10 +179,10 @@ const UserManagementPage: React.FC = () => {
       variant: user.isActive ? 'warning' : 'info',
       confirmText: action.charAt(0).toUpperCase() + action.slice(1),
       onConfirm: () => {
+        const updatedUser = { ...user, isActive: !user.isActive, updatedAt: new Date() };
+        StorageService.updateUser(user.id, updatedUser);
         setUsers(prev => prev.map(u => 
-          u.id === user.id 
-            ? { ...u, isActive: !u.isActive, updatedAt: new Date() }
-            : u
+          u.id === user.id ? updatedUser : u
         ));
       }
     });
@@ -181,6 +195,7 @@ const UserManagementPage: React.FC = () => {
       variant: 'danger',
       confirmText: 'Supprimer',
       onConfirm: () => {
+        StorageService.deleteUser(user.id);
         setUsers(prev => prev.filter(u => u.id !== user.id));
       }
     });
@@ -189,15 +204,15 @@ const UserManagementPage: React.FC = () => {
   const handleSaveUser = (userData: Partial<ExtendedUser>) => {
     if (selectedUser) {
       // Update existing user
+      const updatedUser = { ...selectedUser, ...userData, updatedAt: new Date() };
+      StorageService.updateUser(selectedUser.id, updatedUser);
       setUsers(prev => prev.map(u => 
-        u.id === selectedUser.id 
-          ? { ...u, ...userData, updatedAt: new Date() }
-          : u
+        u.id === selectedUser.id ? updatedUser : u
       ));
     } else {
       // Create new user
       const newUser: ExtendedUser = {
-        id: `user_${Date.now()}`,
+        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email: userData.email!,
         firstName: userData.firstName!,
         lastName: userData.lastName!,
@@ -213,6 +228,7 @@ const UserManagementPage: React.FC = () => {
         failedLoginAttempts: 0,
         ...userData
       };
+      StorageService.addUser(newUser);
       setUsers(prev => [...prev, newUser]);
     }
     setIsEditModalOpen(false);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { StatsCard, Badge } from '@/components/ui';
 import { Plus, Eye, Edit, Phone, Mail, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 import type { Resident, ResidentStatus, Gender, TableColumn } from '@/types';
+import { StorageService } from '@/services/storageService';
 
 // Mock data pour les résidents
 const mockResidents: (Resident & { houseName?: string })[] = [
@@ -134,6 +135,24 @@ const calculateAge = (dateOfBirth: Date) => {
 
 const ResidentsPage: React.FC = () => {
   const router = useRouter();
+  const [residents, setResidents] = useState<(Resident & { houseName?: string })[]>(mockResidents);
+  
+  // Charger les résidents depuis le stockage local
+  useEffect(() => {
+    const storedResidents = StorageService.getResidents();
+    if (storedResidents.length > 0) {
+      // Convertir les dates string en objets Date et ajouter les noms de maison
+      const formattedResidents = storedResidents.map(resident => ({
+        ...resident,
+        dateOfBirth: new Date(resident.dateOfBirth),
+        moveInDate: resident.moveInDate ? new Date(resident.moveInDate) : undefined,
+        createdAt: new Date(resident.createdAt),
+        updatedAt: new Date(resident.updatedAt),
+        houseName: resident.houseId ? `Maison ${resident.houseId}` : undefined
+      }));
+      setResidents([...mockResidents, ...formattedResidents]);
+    }
+  }, []);
   const columns: TableColumn<typeof mockResidents[0]>[] = [
     {
       key: 'fullName',
@@ -246,28 +265,28 @@ const ResidentsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <StatsCard
               title="Total Résidents"
-              value={mockResidents.length}
+              value={residents.length}
               icon={<Users className="w-6 h-6" />}
               color="blue"
             />
             
             <StatsCard
               title="Actifs"
-              value={mockResidents.filter(r => r.status === 'ACTIVE').length}
+              value={residents.filter(r => r.status === 'ACTIVE').length}
               icon={<UserCheck className="w-6 h-6" />}
               color="green"
             />
             
             <StatsCard
               title="Liste d'attente"
-              value={mockResidents.filter(r => r.status === 'WAITING_LIST').length}
+              value={residents.filter(r => r.status === 'WAITING_LIST').length}
               icon={<Clock className="w-6 h-6" />}
               color="yellow"
             />
             
             <StatsCard
               title="Âge moyen"
-              value={`${Math.round(mockResidents.reduce((acc, r) => acc + calculateAge(r.dateOfBirth), 0) / mockResidents.length)} ans`}
+              value={residents.length > 0 ? `${Math.round(residents.reduce((acc, r) => acc + calculateAge(r.dateOfBirth), 0) / residents.length)} ans` : '0 ans'}
               icon={<TrendingUp className="w-6 h-6" />}
               color="purple"
             />
@@ -275,7 +294,7 @@ const ResidentsPage: React.FC = () => {
 
           {/* Residents Table */}
           <DataTable
-            data={mockResidents}
+            data={residents}
             columns={columns}
             actions={actions}
             searchable={true}

@@ -16,6 +16,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Gender, ResidentStatus, EmergencyContact, MedicalInfo, Medication } from '@/types';
+import { StorageService } from '@/services/storageService';
 
 // Types for form data
 interface ResidentFormData {
@@ -175,10 +176,13 @@ const NewResidentPage: React.FC = () => {
     setSubmitStatus('idle');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log('Form submitted:', formData);
+      // Save to localStorage via StorageService
+      StorageService.addResident(formData);
+      
+      console.log('Résident enregistré avec succès:', formData);
       setSubmitStatus('success');
       
       // Redirect after success
