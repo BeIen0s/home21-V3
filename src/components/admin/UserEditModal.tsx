@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ExtendedUser, UserRole, AccessLevel, Role } from '@/types';
 import { mockRoles } from '@/data/mockUserManagement';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { X, Shield, Clock, Key } from 'lucide-react';
+import { X, Shield, Clock, Key, Eye, EyeOff } from 'lucide-react';
 
 interface UserEditModalProps {
   user: ExtendedUser | null;
@@ -20,6 +21,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   onClose,
   onSave
 }) => {
+  const { user: currentUser } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Vérifier si l'utilisateur actuel peut définir des mots de passe
+  const canSetPassword = currentUser?.role === UserRole.SUPER_ADMIN || currentUser?.role === UserRole.ADMIN;
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -31,7 +39,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     accessLevel: AccessLevel.BASIC,
     canAccessAfterHours: false,
     twoFactorEnabled: false,
-    selectedRoles: [] as string[]
+    selectedRoles: [] as string[],
+    password: '',
+    confirmPassword: ''
   });
 
   useEffect(() => {
@@ -47,7 +57,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         accessLevel: user.accessLevel,
         canAccessAfterHours: user.canAccessAfterHours,
         twoFactorEnabled: user.twoFactorEnabled,
-        selectedRoles: user.roles?.map(r => r.id) || []
+        selectedRoles: user.roles?.map(r => r.id) || [],
+        password: '',
+        confirmPassword: ''
       });
     } else {
       setFormData({
@@ -61,7 +73,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         accessLevel: AccessLevel.BASIC,
         canAccessAfterHours: false,
         twoFactorEnabled: false,
-        selectedRoles: []
+        selectedRoles: [],
+        password: '',
+        confirmPassword: ''
       });
     }
   }, [user]);
@@ -69,11 +83,23 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation du mot de passe si les champs sont remplis
+    if (canSetPassword && formData.password) {
+      if (formData.password !== formData.confirmPassword) {
+        alert('Les mots de passe ne correspondent pas');
+        return;
+      }
+      if (formData.password.length < 6) {
+        alert('Le mot de passe doit contenir au moins 6 caractères');
+        return;
+      }
+    }
+    
     const selectedRoleObjects = mockRoles.filter(role => 
       formData.selectedRoles.includes(role.id)
     );
 
-    onSave({
+    const saveData: any = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
@@ -85,7 +111,14 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       canAccessAfterHours: formData.canAccessAfterHours,
       twoFactorEnabled: formData.twoFactorEnabled,
       roles: selectedRoleObjects
-    });
+    };
+    
+    // Inclure le mot de passe si défini par un admin/super admin
+    if (canSetPassword && formData.password) {
+      saveData.password = formData.password;
+    }
+
+    onSave(saveData);
   };
 
   const handleRoleToggle = (roleId: string) => {
@@ -154,6 +187,52 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 value={formData.phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               />
+              
+              {/* Champs mot de passe pour admin/super admin lors de la création */}
+              {canSetPassword && !user && (
+                <>
+                  <div className="relative">
+                    <Input
+                      label="Mot de passe"
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Définir le mot de passe initial"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  
+                  <div className="relative">
+                    <Input
+                      label="Confirmer le mot de passe"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Confirmer le mot de passe"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p className="text-sm text-blue-700">
+                      <Key className="inline w-4 h-4 mr-1" />
+                      Définissez un mot de passe initial pour l'utilisateur. Il pourra le modifier après sa première connexion.
+                    </p>
+                  </div>
+                </>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <Input

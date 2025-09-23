@@ -39,9 +39,16 @@ export class StorageService {
     }
   }
 
-  static addUser(user: ExtendedUser): void {
+  static addUser(user: ExtendedUser & { password?: string; hashedPassword?: string }): void {
     const users = this.getUsers();
-    const updatedUsers = [...users, user];
+    // Ajouter l'utilisateur avec le mot de passe s'il est fourni
+    const newUser = { ...user };
+    if (user.password) {
+      // En production, le mot de passe devrait être hashé
+      newUser.hashedPassword = user.password; // Simulation - en réalité utiliser bcrypt
+      delete newUser.password; // Supprimer le mot de passe en clair
+    }
+    const updatedUsers = [...users, newUser];
     this.saveUsers(updatedUsers);
   }
 
