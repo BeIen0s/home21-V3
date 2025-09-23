@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ExtendedUser, UserRole, AccessLevel, Role } from '@/types';
-import { mockRoles } from '@/data/mockUserManagement';
+import { ExtendedUser, UserRole, AccessLevel } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { X, Shield, Clock, Key, Eye, EyeOff } from 'lucide-react';
+import { X, Key, Eye, EyeOff } from 'lucide-react';
 
 interface UserEditModalProps {
   user: ExtendedUser | null;
@@ -34,12 +33,8 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
     email: '',
     phone: '',
     role: UserRole.RESIDENT,
-    department: '',
-    position: '',
     accessLevel: AccessLevel.BASIC,
-    canAccessAfterHours: false,
     twoFactorEnabled: false,
-    selectedRoles: [] as string[],
     password: '',
     confirmPassword: ''
   });
@@ -52,12 +47,8 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
         email: user.email || '',
         phone: user.phone || '',
         role: user.role,
-        department: user.department || '',
-        position: user.position || '',
         accessLevel: user.accessLevel,
-        canAccessAfterHours: user.canAccessAfterHours,
         twoFactorEnabled: user.twoFactorEnabled,
-        selectedRoles: user.roles?.map(r => r.id) || [],
         password: '',
         confirmPassword: ''
       });
@@ -68,12 +59,8 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
         email: '',
         phone: '',
         role: UserRole.RESIDENT,
-        department: '',
-        position: '',
         accessLevel: AccessLevel.BASIC,
-        canAccessAfterHours: false,
         twoFactorEnabled: false,
-        selectedRoles: [],
         password: '',
         confirmPassword: ''
       });
@@ -101,22 +88,14 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
       // L'utilisateur recevra un email pour définir son mot de passe
     }
     
-    const selectedRoleObjects = mockRoles.filter(role => 
-      formData.selectedRoles.includes(role.id)
-    );
-
     const saveData: any = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
       phone: formData.phone,
       role: formData.role,
-      department: formData.department,
-      position: formData.position,
       accessLevel: formData.accessLevel,
-      canAccessAfterHours: formData.canAccessAfterHours,
-      twoFactorEnabled: formData.twoFactorEnabled,
-      roles: selectedRoleObjects
+      twoFactorEnabled: formData.twoFactorEnabled
     };
     
     // Inclure le mot de passe si défini par un admin/super admin
@@ -127,14 +106,6 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
     onSave(saveData);
   };
 
-  const handleRoleToggle = (roleId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedRoles: prev.selectedRoles.includes(roleId)
-        ? prev.selectedRoles.filter(id => id !== roleId)
-        : [...prev.selectedRoles, roleId]
-    }));
-  };
 
   if (!isOpen) return null;
 
@@ -252,23 +223,6 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
                 </>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Département"
-                  type="text"
-                  value={formData.department}
-                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                  placeholder="Administration, Soins, etc."
-                />
-                
-                <Input
-                  label="Poste"
-                  type="text"
-                  value={formData.position}
-                  onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                  placeholder="Directeur, Infirmière, etc."
-                />
-              </div>
             </div>
 
             {/* Role and Permissions */}
@@ -313,37 +267,10 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
                 
                 <div className="space-y-2">
                   <Checkbox
-                    checked={formData.canAccessAfterHours}
-                    onChange={(e) => setFormData(prev => ({ ...prev, canAccessAfterHours: e.target.checked }))}
-                    label="Accès en dehors des heures d'ouverture"
-                  />
-                  
-                  <Checkbox
                     checked={formData.twoFactorEnabled}
                     onChange={(e) => setFormData(prev => ({ ...prev, twoFactorEnabled: e.target.checked }))}
                     label="Authentification à deux facteurs"
                   />
-                </div>
-              </div>
-
-              {/* Additional Roles */}
-              <div className="space-y-3 pt-2">
-                <h4 className="flex items-center text-sm font-medium text-gray-700">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Rôles additionnels
-                </h4>
-                
-                <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-200 rounded-md p-3">
-                  {mockRoles.filter(role => role.isActive).map(role => (
-                    <Checkbox
-                      key={role.id}
-                      checked={formData.selectedRoles.includes(role.id)}
-                      onChange={() => handleRoleToggle(role.id)}
-                      label={role.name}
-                      description={role.description}
-                      containerClassName="items-start"
-                    />
-                  ))}
                 </div>
               </div>
             </div>

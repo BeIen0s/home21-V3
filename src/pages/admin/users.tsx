@@ -61,9 +61,6 @@ const UserManagementPage: React.FC = () => {
               {user.firstName} {user.lastName}
             </div>
             <div className="text-sm text-gray-500">{user.email}</div>
-            {user.position && (
-              <div className="text-xs text-gray-400">{user.position}</div>
-            )}
           </div>
         </div>
       )
@@ -80,20 +77,6 @@ const UserManagementPage: React.FC = () => {
             <Shield className="w-3 h-3 mr-1" />
             {user.accessLevel}
           </div>
-        </div>
-      )
-    },
-    {
-      key: 'department',
-      title: 'Département',
-      render: (_, user) => (
-        <div>
-          <div className="text-sm text-gray-900">{user.department || '-'}</div>
-          {user.supervisor && (
-            <div className="text-xs text-gray-500">
-              Superviseur: {users.find(u => u.id === user.supervisor)?.firstName} {users.find(u => u.id === user.supervisor)?.lastName}
-            </div>
-          )}
         </div>
       )
     }
