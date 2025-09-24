@@ -348,26 +348,6 @@ export enum NotificationCategory {
   ANNOUNCEMENT = 'ANNOUNCEMENT',
 }
 
-export interface Message {
-  id: string;
-  senderId: string;
-  recipientId?: string; // Individual message
-  groupId?: string; // Group message
-  subject?: string;
-  content: string;
-  type: MessageType;
-  isRead: boolean;
-  attachments?: Attachment[];
-  replyToId?: string; // For threaded conversations
-  createdAt: Date;
-}
-
-export enum MessageType {
-  PRIVATE = 'PRIVATE',
-  GROUP = 'GROUP',
-  ANNOUNCEMENT = 'ANNOUNCEMENT',
-  SYSTEM = 'SYSTEM',
-}
 
 // Document & Media Types
 export interface Document {

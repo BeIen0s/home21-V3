@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, UserPlus, Home, ClipboardList, MessageSquare, Calendar } from 'lucide-react';
+import { Plus, UserPlus, Home, ClipboardList, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 const quickActions = [
@@ -34,14 +34,6 @@ const quickActions = [
     icon: Calendar,
     color: 'bg-purple-500 hover:bg-purple-600',
     href: '/calendar'
-  },
-  {
-    id: '5',
-    title: 'Messages',
-    description: 'Communication équipe',
-    icon: MessageSquare,
-    color: 'bg-pink-500 hover:bg-pink-600',
-    href: '/messages'
   },
   {
     id: '6',
