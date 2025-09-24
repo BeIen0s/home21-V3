@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { NextComponentType, NextPageContext } from 'next';
@@ -49,6 +49,30 @@ function AppContent({ Component, pageProps, pathname }: AppContentProps) {
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
+  
+  // Global error handling for external scripts
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      // Ignore errors from external scripts like share-modal.js
+      if (error.filename && (error.filename.includes('share-modal') || error.filename.includes('extension'))) {
+        console.warn('Ignored external script error:', error.message);
+        return;
+      }
+      console.error('Global error:', error);
+    };
+    
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+    };
+    
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
   
   return (
     <AuthProvider>

@@ -180,8 +180,13 @@ export class AuthService {
 
   // Reset password
   static async resetPassword(email: string) {
+    // Use production URL or current origin
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      : window.location.origin;
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${baseUrl}/auth/reset-password`,
     });
 
     if (error) {
