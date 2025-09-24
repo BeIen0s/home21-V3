@@ -12,6 +12,7 @@ interface FormTextareaProps {
   rows?: number;
   maxLength?: number;
   className?: string;
+  disabled?: boolean;
 }
 
 export const FormTextarea: React.FC<FormTextareaProps> = ({
@@ -24,7 +25,8 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
   error,
   rows = 4,
   maxLength,
-  className = ''
+  className = '',
+  disabled = false
 }) => {
   return (
     <div className={`space-y-2 ${className}`}>
@@ -42,12 +44,15 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           maxLength={maxLength}
+          disabled={disabled}
           className={`
             block w-full rounded-md border px-3 py-2 text-sm transition-colors
             placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2
-            ${error
-              ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 text-gray-900 focus:border-primary-500 focus:ring-primary-500'
+            ${disabled 
+              ? 'bg-gray-700 border-gray-600 text-gray-300 cursor-not-allowed'
+              : error
+                ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
+                : 'bg-gray-700 border-gray-600 text-gray-100 focus:border-primary-500 focus:ring-primary-500'
             }
             resize-none
           `}

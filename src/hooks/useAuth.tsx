@@ -8,6 +8,11 @@ export interface User {
   role: 'SUPER_ADMIN' | 'ADMIN' | 'RESIDENT' | 'ENCADRANT';
   avatar?: string;
   permissions?: string[];
+  phone?: string;
+  address?: string;
+  birthDate?: string;
+  bio?: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -16,6 +21,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  updateProfile: (profileData: Partial<User>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -117,12 +123,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push('/login');
   };
 
+  const updateProfile = async (profileData: Partial<User>): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      
+      // Simulation d'un appel API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (user) {
+        const updatedUser = { ...user, ...profileData };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     isLoading,
     login,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    updateProfile
   };
 
   return (
