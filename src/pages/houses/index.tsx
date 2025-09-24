@@ -16,8 +16,10 @@ import {
   Eye,
   Edit,
   AlertTriangle,
-  Clock
+  Clock,
+  UserPlus
 } from 'lucide-react';
+import { ResidentAssignmentModal } from '@/components/houses/ResidentAssignmentModal';
 import { HouseStatus, type TableColumn } from '@/types';
 
 // Types étendus pour la page
@@ -184,6 +186,8 @@ const getTypeDisplay = (type: string) => {
 const HousesPage: React.FC = () => {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<HouseStatus | 'ALL'>('ALL');
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [selectedHouseForAssignment, setSelectedHouseForAssignment] = useState<HouseWithResident | null>(null);
 
   const filteredHouses = mockHouses.filter(house => 
     statusFilter === 'ALL' || house.status === statusFilter
@@ -261,8 +265,19 @@ const HousesPage: React.FC = () => {
   };
 
   const handleAssignResident = (house: HouseWithResident) => {
-    console.log('Assigner résident à:', house.id);
-    // TODO: Open resident assignment modal
+    setSelectedHouseForAssignment(house);
+    setIsAssignmentModalOpen(true);
+  };
+
+  const handleAssignmentComplete = (assignmentData: any) => {
+    console.log('Assignation complète:', assignmentData, 'pour le logement:', selectedHouseForAssignment?.id);
+    // En production, ceci ferait un appel API pour mettre à jour les données
+    // Ici, on simule juste la fermeture du modal
+  };
+
+  const closeAssignmentModal = () => {
+    setIsAssignmentModalOpen(false);
+    setSelectedHouseForAssignment(null);
   };
 
   const actions = [
@@ -280,6 +295,7 @@ const HousesPage: React.FC = () => {
       label: 'Assigner',
       onClick: handleAssignResident,
       variant: 'ghost' as const,
+      icon: UserPlus,
       condition: (house: HouseWithResident) => house.status === 'AVAILABLE'
     }
   ];
@@ -401,6 +417,22 @@ const HousesPage: React.FC = () => {
             onRowClick={handleViewHouse}
           />
         </main>
+
+        {/* Assignment Modal */}
+        {selectedHouseForAssignment && (
+          <ResidentAssignmentModal
+            isOpen={isAssignmentModalOpen}
+            onClose={closeAssignmentModal}
+            house={{
+              id: selectedHouseForAssignment.id,
+              name: selectedHouseForAssignment.name,
+              type: getTypeDisplay(selectedHouseForAssignment.type),
+              surface: selectedHouseForAssignment.surface,
+              monthlyRent: selectedHouseForAssignment.monthlyRent
+            }}
+            onAssign={handleAssignmentComplete}
+          />
+        )}
       </div>
     </Layout>
   );
