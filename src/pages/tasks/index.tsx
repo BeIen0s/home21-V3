@@ -20,6 +20,8 @@ import {
   Play
 } from 'lucide-react';
 import type { TableColumn } from '@/types';
+import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { Resource } from '@/utils/permissions';
 
 // Task types
 export enum TaskStatus {
@@ -468,12 +470,19 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <Layout
-      title="Pass21 - Gestion des Tâches"
-      description="Gestion et suivi des tâches de la résidence Pass21"
+    <RoleProtectedRoute 
+      resource={Resource.TASKS}
+      fallbackTitle="Accès restreint"
+      fallbackDescription="Vous n'avez pas les permissions nécessaires pour gérer les tâches"
       showNavbar={true}
       showFooter={false}
     >
+      <Layout
+        title="Pass21 - Gestion des Tâches"
+        description="Gestion et suivi des tâches de la résidence Pass21"
+        showNavbar={true}
+        showFooter={false}
+      >
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b border-gray-200">
@@ -655,8 +664,9 @@ const TasksPage: React.FC = () => {
             onRowClick={handleViewTask}
           />
         </main>
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </RoleProtectedRoute>
   );
 };
 

@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { ResidentAssignmentModal } from '@/components/houses/ResidentAssignmentModal';
 import { HouseStatus, type TableColumn } from '@/types';
+import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { Resource } from '@/utils/permissions';
 
 // Types étendus pour la page
 interface HouseWithResident {
@@ -312,12 +314,19 @@ const HousesPage: React.FC = () => {
   };
 
   return (
-    <Layout
-      title="Pass21 - Gestion des Logements"
-      description="Gestion des maisons et logements de la résidence Pass21"
+    <RoleProtectedRoute 
+      resource={Resource.HOUSES}
+      fallbackTitle="Accès restreint"
+      fallbackDescription="Vous n'avez pas les permissions nécessaires pour gérer les logements"
       showNavbar={true}
       showFooter={false}
     >
+      <Layout
+        title="Pass21 - Gestion des Logements"
+        description="Gestion des maisons et logements de la résidence Pass21"
+        showNavbar={true}
+        showFooter={false}
+      >
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b border-gray-200">
@@ -433,8 +442,9 @@ const HousesPage: React.FC = () => {
             onAssign={handleAssignmentComplete}
           />
         )}
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </RoleProtectedRoute>
   );
 };
 

@@ -113,10 +113,6 @@ const LoginPage: React.FC = () => {
             password: 'admin123', 
             user: { id: '2', name: 'Administrateur', email: 'admin@pass21.fr', role: 'ADMIN' }
           },
-          'recruteur@pass21.fr': {
-            password: 'recruit123',
-            user: { id: '3', name: 'Recruteur', email: 'recruteur@pass21.fr', role: 'RECRUTEUR' }
-          },
           'encadrant@pass21.fr': {
             password: 'encadrant123',
             user: { id: '4', name: 'Encadrant', email: 'encadrant@pass21.fr', role: 'ENCADRANT' }
@@ -310,7 +306,6 @@ const LoginPage: React.FC = () => {
                     <div className="space-y-1">
                       <p><strong>Super Admin:</strong> superadmin@pass21.fr / super123 (2FA: 123456)</p>
                       <p><strong>Admin:</strong> admin@pass21.fr / admin123</p>
-                      <p><strong>Recruteur:</strong> recruteur@pass21.fr / recruit123</p>
                       <p><strong>Encadrant:</strong> encadrant@pass21.fr / encadrant123</p>
                       <p><strong>Résident:</strong> resident@pass21.fr / resident123</p>
                     </div>

@@ -517,30 +517,6 @@ export const mockExtendedUsers: ExtendedUser[] = [
     lastPasswordChange: new Date('2024-01-02')
   },
   {
-    id: 'user_3',
-    email: 'sophie.laurent@home21.com',
-    firstName: 'Sophie',
-    lastName: 'Laurent',
-    avatar: '/api/placeholder/40/40',
-    role: UserRole.RECRUTEUR,
-    phone: '01 23 45 67 91',
-    isActive: true,
-    lastLogin: new Date('2024-01-14T17:45:00'),
-    createdAt: new Date('2024-01-03'),
-    updatedAt: new Date('2024-01-10'),
-    roles: [mockRoles[2]], // Recruteur
-    permissions: [],
-    department: 'Ressources Humaines',
-    position: 'Responsable recrutement',
-    supervisor: 'user_2',
-    managedUsers: ['user_4', 'user_5', 'user_6'],
-    accessLevel: AccessLevel.ELEVATED,
-    canAccessAfterHours: true,
-    twoFactorEnabled: false,
-    failedLoginAttempts: 0,
-    lastPasswordChange: new Date('2024-01-03')
-  },
-  {
     id: 'user_4',
     email: 'claire.dubois@home21.com',
     firstName: 'Claire',
@@ -552,11 +528,11 @@ export const mockExtendedUsers: ExtendedUser[] = [
     lastLogin: new Date('2024-01-15T07:30:00'),
     createdAt: new Date('2024-01-05'),
     updatedAt: new Date('2024-01-12'),
-    roles: [mockRoles[3]], // Encadrant
+    roles: [mockRoles[2]], // Manager
     permissions: [],
     department: 'Encadrement',
     position: 'Responsable encadrement',
-    supervisor: 'user_3',
+    supervisor: 'user_2',
     accessLevel: AccessLevel.ELEVATED,
     canAccessAfterHours: true,
     twoFactorEnabled: false,
@@ -575,11 +551,11 @@ export const mockExtendedUsers: ExtendedUser[] = [
     lastLogin: new Date('2024-01-15T06:00:00'),
     createdAt: new Date('2024-01-06'),
     updatedAt: new Date('2024-01-13'),
-    roles: [mockRoles[4]], // Resident
+    roles: [mockRoles[3]], // Nurse
     permissions: [],
-    department: '',
-    position: 'Résident',
-    supervisor: 'user_3',
+    department: 'Soins',
+    position: 'Infirmier',
+    supervisor: 'user_2',
     accessLevel: AccessLevel.BASIC,
     canAccessAfterHours: false,
     twoFactorEnabled: false,
@@ -598,11 +574,11 @@ export const mockExtendedUsers: ExtendedUser[] = [
     lastLogin: new Date('2024-01-14T14:20:00'),
     createdAt: new Date('2024-01-08'),
     updatedAt: new Date('2024-01-11'),
-    roles: [mockRoles[5]], // Staff
+    roles: [mockRoles[4]], // Caregiver
     permissions: [],
     department: 'Entretien',
     position: 'Agent d\'entretien',
-    supervisor: 'user_3',
+    supervisor: 'user_2',
     accessLevel: AccessLevel.BASIC,
     canAccessAfterHours: false,
     twoFactorEnabled: false,

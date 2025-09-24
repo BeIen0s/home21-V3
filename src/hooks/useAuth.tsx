@@ -5,7 +5,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'RECRUTEUR' | 'RESIDENT' | 'ENCADRANT';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'RESIDENT' | 'ENCADRANT';
   avatar?: string;
   permissions?: string[];
 }
@@ -69,16 +69,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             email: 'admin@pass21.fr',
             role: 'ADMIN',
             permissions: ['users', 'residents', 'houses', 'services', 'tasks', 'settings']
-          }
-        },
-        'recruteur@pass21.fr': {
-          password: 'recruit123',
-          user: {
-            id: '3',
-            name: 'Recruteur',
-            email: 'recruteur@pass21.fr',
-            role: 'RECRUTEUR',
-            permissions: ['residents', 'houses']
           }
         },
         'encadrant@pass21.fr': {

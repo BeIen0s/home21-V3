@@ -6,6 +6,8 @@ import { Select } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { StatsCard } from '@/components/ui';
+import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { Resource } from '@/utils/permissions';
 import { 
   Settings, 
   User, 
@@ -71,43 +73,50 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <Layout
-      title="Pass21 - Paramètres"
-      description="Configuration et paramètres du système"
-      showNavbar={false}
+    <RoleProtectedRoute 
+      resource={Resource.SETTINGS}
+      fallbackTitle="Accès restreint"
+      fallbackDescription="Seuls les super administrateurs peuvent accéder aux paramètres système"
+      showNavbar={true}
       showFooter={false}
     >
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
-                <p className="text-gray-600 mt-1">
-                  Configuration et paramètres du système Pass21
-                </p>
-              </div>
-              <div className="flex space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  className="inline-flex items-center"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Réinitialiser
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  className="inline-flex items-center"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Enregistrer
-                </Button>
+      <Layout
+        title="Pass21 - Paramètres"
+        description="Configuration et paramètres du système"
+        showNavbar={true}
+        showFooter={false}
+      >
+        <div className="min-h-screen bg-gray-50">
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
+                  <p className="text-gray-600 mt-1">
+                    Configuration et paramètres du système Pass21
+                  </p>
+                </div>
+                <div className="flex space-x-3">
+                  <Button
+                    variant="outline"
+                    onClick={handleReset}
+                    className="inline-flex items-center"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Réinitialiser
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    className="inline-flex items-center"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Enregistrer
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {/* Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -400,8 +409,9 @@ const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
         </main>
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </RoleProtectedRoute>
   );
 };
 

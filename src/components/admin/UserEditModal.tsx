@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ExtendedUser, UserRole, AccessLevel } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { X, Key, Eye, EyeOff } from 'lucide-react';
+import { X, Key, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 interface UserEditModalProps {
   user: ExtendedUser | null;
@@ -21,11 +22,15 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   onSave
 }) => {
   const { user: currentUser } = useAuth();
+  const { getAssignableUserRoles, canCreateSuperAdmin } = usePermissions();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Vérifier si l'utilisateur actuel peut définir des mots de passe
-const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN';
+  const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN';
+  
+  // Rôles que l'utilisateur actuel peut assigner
+  const assignableRoles = getAssignableUserRoles();
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -238,10 +243,33 @@ const canSetPassword = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role 
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as UserRole }))}
                   required
                 >
-                  {Object.values(UserRole).map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
+                  {assignableRoles.map(role => {
+                    const roleLabels = {
+                      [UserRole.SUPER_ADMIN]: 'Super Administrateur',
+                      [UserRole.ADMIN]: 'Administrateur',
+                      [UserRole.ENCADRANT]: 'Encadrant',
+                      [UserRole.RESIDENT]: 'Résident'
+                    };
+                    return (
+                      <option key={role} value={role}>
+                        {roleLabels[role] || role}
+                      </option>
+                    );
+                  })}
                 </Select>
+                
+                {/* Message d'information sur les rôles */}
+                {!canCreateSuperAdmin() && (
+                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <div className="flex">
+                      <AlertTriangle className="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-amber-700">
+                        <p className="font-medium">Limitation des rôles</p>
+                        <p className="mt-1">Vous ne pouvez pas créer de super administrateurs. Seuls les super administrateurs peuvent assigner ce rôle.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
