@@ -210,19 +210,6 @@ const ResidentDetailPage: React.FC = () => {
     );
   }
 
-  const handleCallEmergencyContact = () => {
-    const phone = resident.emergencyContact.phone;
-    if (phone) {
-      window.open(`tel:${phone}`, '_self');
-    }
-  };
-
-  const handleEmailEmergencyContact = () => {
-    const email = resident.emergencyContact.email;
-    if (email) {
-      window.open(`mailto:${email}`, '_self');
-    }
-  };
 
   return (
     <Layout
@@ -514,26 +501,16 @@ const ResidentDetailPage: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-col space-y-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleCallEmergencyContact}
-                      className="justify-start"
-                    >
+                    <div className="flex items-center text-sm text-gray-600">
                       <Phone className="h-4 w-4 mr-2" />
                       {resident.emergencyContact.phone}
-                    </Button>
+                    </div>
                     
                     {resident.emergencyContact.email && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={handleEmailEmergencyContact}
-                        className="justify-start"
-                      >
+                      <div className="flex items-center text-sm text-gray-600">
                         <Mail className="h-4 w-4 mr-2" />
                         {resident.emergencyContact.email}
-                      </Button>
+                      </div>
                     )}
                   </div>
                 </div>

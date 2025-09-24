@@ -1,6 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Heart, Clock, Phone } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { AlertTriangle, Heart, Clock } from 'lucide-react';
 
 const mockAlerts = [
   {
@@ -65,10 +64,6 @@ export const ResidentAlerts: React.FC = () => {
                   <p className="text-sm mb-2">{alert.message}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium">{alert.time}</span>
-                    <Button variant="ghost" size="sm">
-                      <Phone className="h-3 w-3 mr-1" />
-                      Appeler
-                    </Button>
                   </div>
                 </div>
               </div>
