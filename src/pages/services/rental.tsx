@@ -6,6 +6,7 @@ import { FormInput } from '@/components/forms/FormInput';
 import { FormSelect } from '@/components/forms/FormSelect';
 import { FormTextarea } from '@/components/forms/FormTextarea';
 import { FormDatePicker } from '@/components/forms/FormDatePicker';
+import { usePermissions } from '@/hooks/usePermissions';
 import { 
   ArrowLeft, 
   Package, 
@@ -17,7 +18,9 @@ import {
   AlertCircle,
   Search,
   Filter,
-  Heart
+  Heart,
+  Edit,
+  Trash2
 } from 'lucide-react';
 
 enum RentalCategory {
@@ -189,6 +192,7 @@ const mockRentalItems: RentalItem[] = [
 
 const RentalServicePage: React.FC = () => {
   const router = useRouter();
+  const { canUpdateServices, canDeleteServices, canManageServices } = usePermissions();
   const [selectedCategory, setSelectedCategory] = useState<RentalCategory | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<{ [key: string]: { quantity: number; duration: RentalDuration } }>({});
@@ -459,6 +463,39 @@ const RentalServicePage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Section d'administration - visible seulement pour les admins */}
+              {canManageServices() && (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-medium text-gray-900">Administration des Équipements</h2>
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={() => {
+                          // TODO: Implémenter l'ajout d'équipement
+                          alert('Fonctionnalité d\'ajout d\'equipment à implémenter');
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        Ajouter un équipement
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          // TODO: Implémenter la gestion des stocks
+                          alert('Fonctionnalité de gestion des stocks à implémenter');
+                        }}
+                      >
+                        Gérer les stocks
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Utilisez cette section pour ajouter de nouveaux équipements, modifier les prix ou gérer les stocks.
+                  </p>
+                </div>
+              )}
+
               {/* Items Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {getFilteredItems().map((item) => (
@@ -519,6 +556,42 @@ const RentalServicePage: React.FC = () => {
                         {item.deliveryIncluded ? ' Livraison incluse' : ' Livraison en sus'} •
                         {item.maintenanceRequired ? ' Maintenance incluse' : ' Pas de maintenance'}
                       </div>
+
+                      {/* Boutons d'administration - visible seulement pour ceux qui peuvent modifier */}
+                      {(canUpdateServices() || canDeleteServices()) && (
+                        <div className="flex space-x-2 mb-4 pb-4 border-b border-gray-100">
+                          {canUpdateServices() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                // TODO: Implémenter la modification d'équipement
+                                alert(`Modifier l'équipement: ${item.name}`);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Modifier
+                            </Button>
+                          )}
+                          {canDeleteServices() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                // TODO: Implémenter la suppression d'équipement
+                                if (confirm(`Êtes-vous sûr de vouloir supprimer l'équipement "${item.name}" ?`)) {
+                                  alert(`Supprimer l'équipement: ${item.name}`);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Supprimer
+                            </Button>
+                          )}
+                        </div>
+                      )}
 
                       {item.availability > 0 && (
                         <div className="space-y-3">

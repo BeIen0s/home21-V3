@@ -8,7 +8,8 @@ export enum Resource {
   HOUSES = 'houses',
   TASKS = 'tasks',
   DASHBOARD = 'dashboard',
-  PROFILE = 'profile'
+  PROFILE = 'profile',
+  SERVICES = 'services'
 }
 
 export enum Action {
@@ -28,7 +29,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Action[]>> = {
     [Resource.HOUSES]: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE, Action.MANAGE],
     [Resource.TASKS]: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE, Action.MANAGE],
     [Resource.DASHBOARD]: [Action.VIEW],
-    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE]
+    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE],
+    [Resource.SERVICES]: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE, Action.MANAGE]
   },
   
   [UserRole.ADMIN]: {
@@ -38,7 +40,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Action[]>> = {
     [Resource.HOUSES]: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE, Action.MANAGE],
     [Resource.TASKS]: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE, Action.MANAGE],
     [Resource.DASHBOARD]: [Action.VIEW],
-    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE]
+    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE],
+    [Resource.SERVICES]: [Action.VIEW, Action.CREATE, Action.UPDATE, Action.DELETE, Action.MANAGE]
   },
   
   [UserRole.ENCADRANT]: {
@@ -48,7 +51,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Action[]>> = {
     [Resource.HOUSES]: [Action.VIEW, Action.UPDATE], // Lecture et modification seulement
     [Resource.TASKS]: [Action.VIEW, Action.CREATE, Action.UPDATE], // Pas de suppression
     [Resource.DASHBOARD]: [Action.VIEW],
-    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE]
+    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE],
+    [Resource.SERVICES]: [Action.VIEW, Action.CREATE, Action.UPDATE] // Accès complet sauf suppression
   },
   
   [UserRole.RESIDENT]: {
@@ -58,7 +62,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<Resource, Action[]>> = {
     [Resource.HOUSES]: [], // Pas d'accès aux logements
     [Resource.TASKS]: [], // Pas d'accès aux tâches
     [Resource.DASHBOARD]: [Action.VIEW],
-    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE]
+    [Resource.PROFILE]: [Action.VIEW, Action.UPDATE],
+    [Resource.SERVICES]: [Action.VIEW, Action.CREATE] // Peut voir et faire des demandes de location
   }
 };
 
@@ -70,7 +75,8 @@ export const PAGE_RESOURCES: Record<string, Resource> = {
   '/houses': Resource.HOUSES,
   '/tasks': Resource.TASKS,
   '/dashboard': Resource.DASHBOARD,
-  '/profile': Resource.PROFILE
+  '/profile': Resource.PROFILE,
+  '/services/rental': Resource.SERVICES
 };
 
 // Actions spéciales

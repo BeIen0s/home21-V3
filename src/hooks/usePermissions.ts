@@ -96,6 +96,13 @@ export const usePermissions = () => {
     canDeleteTasks: () => checkPermission(Resource.TASKS, Action.DELETE),
     canManageTasks: () => checkPermission(Resource.TASKS, Action.MANAGE),
     
+    // Services
+    canViewServices: () => checkPermission(Resource.SERVICES, Action.VIEW),
+    canCreateServices: () => checkPermission(Resource.SERVICES, Action.CREATE),
+    canUpdateServices: () => checkPermission(Resource.SERVICES, Action.UPDATE),
+    canDeleteServices: () => checkPermission(Resource.SERVICES, Action.DELETE),
+    canManageServices: () => checkPermission(Resource.SERVICES, Action.MANAGE),
+    
     // Permissions spéciales
     canCreateSuperAdmin: () => checkSpecialPermission(SPECIAL_PERMISSIONS.CREATE_SUPER_ADMIN),
     canManageSystemSettings: () => checkSpecialPermission(SPECIAL_PERMISSIONS.MANAGE_SYSTEM_SETTINGS),
@@ -108,7 +115,8 @@ export const usePermissions = () => {
     canAccessHousesPage: () => checkPageAccess('/houses'),
     canAccessTasksPage: () => checkPageAccess('/tasks'),
     canAccessDashboardPage: () => checkPageAccess('/dashboard'),
-    canAccessProfilePage: () => checkPageAccess('/profile')
+    canAccessProfilePage: () => checkPageAccess('/profile'),
+    canAccessServicesPage: () => checkPageAccess('/services/rental')
   };
   
   return {
