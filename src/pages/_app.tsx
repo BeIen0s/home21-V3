@@ -24,6 +24,7 @@ const queryClient = new QueryClient({
 const publicRoutes = [
   '/login',
   '/login-old',
+  '/direct-login', // Emergency login bypass
   '/logout',
   '/unauthorized',
   '/auth/reset-password',
