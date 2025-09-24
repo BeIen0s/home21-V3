@@ -43,7 +43,9 @@ function AppContent({ Component, pageProps, pathname }: AppContentProps) {
   // DEBUG MODE: Bypass protection for debugging
   const isDebugMode = process.env.NODE_ENV === 'development' && pathname === '/debug';
   
+  // Pour les routes publiques, ne pas initialiser l'auth du tout
   if (isPublicRoute || isDebugMode) {
+    console.log('🟢 Public route detected:', pathname, '- Skipping auth verification');
     return <Component {...pageProps} />;
   }
   
@@ -74,6 +76,7 @@ function AppContent({ Component, pageProps, pathname }: AppContentProps) {
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
+  const isPublicRoute = publicRoutes.includes(router.pathname);
   
   // Global error handling for external scripts
   useEffect(() => {
@@ -99,18 +102,30 @@ export default function App({ Component, pageProps }: AppProps) {
     };
   }, []);
   
+  const content = (
+    <QueryClientProvider client={queryClient}>
+      <AppContent 
+        Component={Component} 
+        pageProps={pageProps} 
+        pathname={router.pathname}
+      />
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
+  );
+
+  // Pour les routes publiques, pas besoin d'AuthProvider
+  if (isPublicRoute) {
+    console.log('🟢 Skipping AuthProvider for public route:', router.pathname);
+    return content;
+  }
+  
+  // Pour les routes protégées, utiliser AuthProvider
+  console.log('🔒 Using AuthProvider for protected route:', router.pathname);
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <AppContent 
-          Component={Component} 
-          pageProps={pageProps} 
-          pathname={router.pathname}
-        />
-        {process.env.NODE_ENV === 'development' && (
-          <ReactQueryDevtools initialIsOpen={false} />
-        )}
-      </QueryClientProvider>
+      {content}
     </AuthProvider>
   );
 }
