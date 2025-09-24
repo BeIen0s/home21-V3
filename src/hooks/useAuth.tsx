@@ -307,25 +307,19 @@ export const useAuth = () => {
     '/auth/reset-password'
   ];
   
-  const isPublicRoute = publicRoutes.includes(currentPath);
-  
-  console.log('🔍 useAuth: No AuthProvider found', {
-    currentPath,
-    isPublicRoute,
-    publicRoutes
-  });
+  // Normalize path by removing trailing slash (except for root)
+  const normalizedPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
+  const isPublicRoute = publicRoutes.includes(normalizedPath);
   
   if (isPublicRoute) {
-    console.log(`✅ useAuth: Using fallback context for public route: ${currentPath}`);
+    // Silently return fallback context for public routes
     return createFallbackAuthContext();
   }
   
-  // Not a public route and no AuthProvider - this is likely a configuration error
-  console.error(`❌ useAuth: Called on protected route '${currentPath}' without AuthProvider`);
-  
-  // For now, return fallback instead of throwing to prevent app crash
-  // TODO: Consider throwing error in production after fixing all routes
-  console.warn('⚠️ Returning fallback auth context to prevent crash - please fix AuthProvider configuration');
+  // Not a public route and no AuthProvider - return fallback to prevent crash
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(`⚠️ useAuth: No AuthProvider found for route '${normalizedPath}' - using fallback`);
+  }
   return createFallbackAuthContext();
   
   // Uncomment this line if you want strict error throwing:
