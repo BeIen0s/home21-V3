@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, User, Settings, LogOut } from 'lucide-react';
+import { Bell, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -43,10 +43,6 @@ export const DashboardHeader: React.FC = () => {
               </div>
             </div>
 
-            {/* Settings */}
-            <Button variant="ghost" size="sm">
-              <Settings className="h-5 w-5" />
-            </Button>
             {/* Logout */}
             <Button variant="outline" size="sm" onClick={logout}>
               <LogOut className="h-5 w-5 mr-2" />
