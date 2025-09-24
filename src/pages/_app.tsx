@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import type { AppProps } from 'next/app';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextComponentType, NextPageContext } from 'next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -51,9 +52,9 @@ function AppContent({ Component, pageProps, pathname }: AppContentProps) {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-white mb-4">Problème d'authentification</h1>
         <p className="text-gray-400 mb-6">Impossible d'initialiser l'authentification</p>
-        <a href="/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <Link href="/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Aller à la page de connexion
-        </a>
+        </Link>
       </div>
     </div>
   );
