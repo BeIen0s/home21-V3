@@ -74,27 +74,52 @@ export class AuthService {
 
   // Get user profile from database
   static async getUserProfile(userId: string): Promise<AuthUser | null> {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      console.log('Fetching user profile for ID:', userId);
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // User not found in database, return null
+      if (error) {
+        console.error('Supabase error fetching user profile:', error);
+        
+        // Handle various error codes
+        if (error.code === 'PGRST116' || error.code === 'PGRST301') {
+          // User not found in database
+          console.log('User not found in users table, creating profile...');
+          return null;
+        }
+        
+        // For 406 errors or RLS policy violations, return null instead of throwing
+        if (error.code === 'PGRST401' || error.message.includes('policy')) {
+          console.warn('RLS policy violation, user may need to be added to users table');
+          return null;
+        }
+        
+        throw new Error(`Failed to fetch user profile: ${error.message}`);
+      }
+
+      if (!data) {
+        console.log('No user profile found for ID:', userId);
         return null;
       }
-      throw new Error(error.message);
+
+      console.log('User profile found:', data);
+      
+      // Add permissions based on role
+      const permissions = this.getPermissionsByRole(data.role);
+
+      return {
+        ...data,
+        permissions,
+      };
+    } catch (err) {
+      console.error('Error in getUserProfile:', err);
+      return null; // Return null instead of throwing to prevent app crash
     }
-
-    // Add permissions based on role
-    const permissions = this.getPermissionsByRole(data.role);
-
-    return {
-      ...data,
-      permissions,
-    };
   }
 
   // Create user profile in database (called after successful signup)
