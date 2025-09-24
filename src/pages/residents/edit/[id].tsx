@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
@@ -88,14 +88,7 @@ const EditResidentPage: React.FC = () => {
   const [newAllergy, setNewAllergy] = useState('');
   const [newCondition, setNewCondition] = useState('');
 
-  // Load resident data
-  useEffect(() => {
-    if (id) {
-      loadResident(id as string);
-    }
-  }, [id]);
-
-  const loadResident = (residentId: string) => {
+  const loadResident = useCallback((residentId: string) => {
     setIsLoading(true);
     
     // Charger depuis le stockage local
@@ -195,7 +188,14 @@ const EditResidentPage: React.FC = () => {
     }
     
     setIsLoading(false);
-  };
+  }, [router]);
+
+  // Load resident data
+  useEffect(() => {
+    if (id) {
+      loadResident(id as string);
+    }
+  }, [id, loadResident]);
 
   // Validation functions
   const validateForm = (): FormErrors => {

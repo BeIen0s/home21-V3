@@ -208,8 +208,8 @@ export const ResidentAssignmentModal: React.FC<ResidentAssignmentModalProps> = (
               id="resident"
               label="Résident à assigner"
               value={selectedResident}
-              onChange={(value) => {
-                setSelectedResident(value);
+              onChange={(e) => {
+                setSelectedResident(e.target.value);
                 if (errors.resident) {
                   setErrors(prev => ({ ...prev, resident: '' }));
                 }

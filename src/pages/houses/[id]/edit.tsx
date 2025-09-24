@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
@@ -136,13 +136,7 @@ const EditHousePage: React.FC = () => {
     }
   ];
 
-  useEffect(() => {
-    if (id) {
-      loadHouse(id as string);
-    }
-  }, [id]);
-
-  const loadHouse = (houseId: string) => {
+  const loadHouse = useCallback((houseId: string) => {
     setIsLoading(true);
     
     // Simuler un délai d'API
@@ -169,7 +163,13 @@ const EditHousePage: React.FC = () => {
       
       setIsLoading(false);
     }, 500);
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (id) {
+      loadHouse(id as string);
+    }
+  }, [id, loadHouse]);
 
   const updateFormData = (field: string, value: any) => {
     if (!formData) return;
