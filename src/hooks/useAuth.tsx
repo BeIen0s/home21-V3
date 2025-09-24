@@ -262,24 +262,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Create a fallback context for when AuthProvider is not available
+const createFallbackAuthContext = () => ({
+  user: null,
+  session: null,
+  isLoading: false,
+  login: async () => false,
+  logout: async () => {},
+  isAuthenticated: false,
+  updateProfile: async () => false,
+  resetPassword: async () => {},
+});
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    // During SSG/SSR or on public routes, return a fallback context
-    if (typeof window === 'undefined') {
-      // Server-side rendering fallback
-      return {
-        user: null,
-        session: null,
-        isLoading: false,
-        login: async () => false,
-        logout: async () => {},
-        isAuthenticated: false,
-        updateProfile: async () => false,
-        resetPassword: async () => {},
-      };
-    }
-    throw new Error('useAuth must be used within an AuthProvider');
+  
+  // If we have a context, use it normally
+  if (context !== undefined) {
+    return context;
   }
-  return context;
+  
+  // No context available - this means we're either:
+  // 1. On server-side during SSG/SSR
+  // 2. On a public route without AuthProvider
+  // 3. On a protected route that's misconfigured
+  
+  const isServerSide = typeof window === 'undefined';
+  
+  if (isServerSide) {
+    // Always return fallback during SSR/SSG
+    console.log('🔄 useAuth: Using fallback context for SSR/SSG');
+    return createFallbackAuthContext();
+  }
+  
+  // Client-side: check if we're on a known public route
+  const currentPath = window.location.pathname;
+  const publicRoutes = [
+    '/',
+    '/login',
+    '/login-old', 
+    '/direct-login',
+    '/logout',
+    '/unauthorized',
+    '/auth/reset-password'
+  ];
+  
+  const isPublicRoute = publicRoutes.includes(currentPath);
+  
+  console.log('🔍 useAuth: No AuthProvider found', {
+    currentPath,
+    isPublicRoute,
+    publicRoutes
+  });
+  
+  if (isPublicRoute) {
+    console.log(`✅ useAuth: Using fallback context for public route: ${currentPath}`);
+    return createFallbackAuthContext();
+  }
+  
+  // Not a public route and no AuthProvider - this is likely a configuration error
+  console.error(`❌ useAuth: Called on protected route '${currentPath}' without AuthProvider`);
+  
+  // For now, return fallback instead of throwing to prevent app crash
+  // TODO: Consider throwing error in production after fixing all routes
+  console.warn('⚠️ Returning fallback auth context to prevent crash - please fix AuthProvider configuration');
+  return createFallbackAuthContext();
+  
+  // Uncomment this line if you want strict error throwing:
+  // throw new Error('useAuth must be used within an AuthProvider');
 };

@@ -320,13 +320,6 @@ const LoginPage: React.FC = () => {
                   </Button>
                 </form>
 
-                {/* Demo Info */}
-                <div className="mt-6 p-3 bg-blue-900 rounded-lg border border-blue-700">
-                  <div className="text-xs text-blue-200">
-                    <p className="font-medium mb-2">Pour tester l'application :</p>
-                    <p>Créez un compte dans Supabase Auth avec admin@home21.com</p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           )}
