@@ -35,7 +35,7 @@ const ProfilePage: React.FC = () => {
     email: user?.email || '',
     phone: user?.phone || '',
     address: user?.address || '',
-    birthDate: user?.birthDate || '',
+    birth_date: user?.birth_date || '',
     bio: user?.bio || '',
     notifications: {
       email: true,
@@ -153,7 +153,7 @@ const ProfilePage: React.FC = () => {
       email: user?.email || '',
       phone: user?.phone || '',
       address: user?.address || '',
-      birthDate: user?.birthDate || '',
+      birth_date: user?.birth_date || '',
       bio: user?.bio || '',
       notifications: {
         email: true,
@@ -325,11 +325,11 @@ const ProfilePage: React.FC = () => {
                       />
                       
                       <FormInput
-                        id="birthDate"
+                        id="birth_date"
                         label="Date de naissance"
                         type="date"
-                        value={formData.birthDate}
-                        onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                        value={formData.birth_date}
+                        onChange={(e) => handleInputChange('birth_date', e.target.value)}
                         disabled={!isEditing}
                       />
                     </div>
@@ -534,7 +534,7 @@ const ProfilePage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-400">Membre depuis</span>
                     <span className="text-sm text-gray-300">
-                      {user.createdAt ? new Date(user.createdAt).getFullYear() : '2024'}
+                      {user.created_at ? new Date(user.created_at).getFullYear() : '2024'}
                     </span>
                   </div>
                   

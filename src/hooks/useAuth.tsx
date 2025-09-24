@@ -1,5 +1,7 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { useRouter } from 'next/router';
+import { AuthService, type AuthUser } from '@/services/auth.service';
+import type { Session } from '@supabase/supabase-js';
 
 export interface User {
   id: string;
@@ -10,101 +12,122 @@ export interface User {
   permissions?: string[];
   phone?: string;
   address?: string;
-  birthDate?: string;
+  birth_date?: string;
   bio?: string;
-  createdAt?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   updateProfile: (profileData: Partial<User>) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Check if user is logged in on app load
+  // Check auth state and set up listener
   useEffect(() => {
-    const checkAuth = () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
       try {
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+        // Get initial session
+        const initialSession = await AuthService.getCurrentSession();
+        
+        if (mounted) {
+          setSession(initialSession);
+          
+          if (initialSession?.user) {
+            // Get user profile from database
+            const userProfile = await AuthService.getUserProfile(initialSession.user.id);
+            if (userProfile && mounted) {
+              setUser({
+                id: userProfile.id,
+                name: userProfile.name,
+                email: userProfile.email,
+                role: userProfile.role,
+                avatar: userProfile.avatar || undefined,
+                permissions: userProfile.permissions,
+                phone: userProfile.phone || undefined,
+                address: userProfile.address || undefined,
+                birth_date: userProfile.birth_date || undefined,
+                bio: userProfile.bio || undefined,
+                created_at: userProfile.created_at,
+                updated_at: userProfile.updated_at,
+              });
+            }
+          }
         }
       } catch (error) {
-        console.error('Error loading user from localStorage:', error);
-        localStorage.removeItem('user');
+        console.error('Error initializing auth:', error);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    checkAuth();
+    initializeAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      setSession(session);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        try {
+          const userProfile = await AuthService.getUserProfile(session.user.id);
+          if (userProfile && mounted) {
+            setUser({
+              id: userProfile.id,
+              name: userProfile.name,
+              email: userProfile.email,
+              role: userProfile.role,
+              avatar: userProfile.avatar || undefined,
+              permissions: userProfile.permissions,
+              phone: userProfile.phone || undefined,
+              address: userProfile.address || undefined,
+              birth_date: userProfile.birth_date || undefined,
+              bio: userProfile.bio || undefined,
+              created_at: userProfile.created_at,
+              updated_at: userProfile.updated_at,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       
-      // This is a mock login function
-      // In a real app, this would make an API call
-      const mockUsers: Record<string, { password: string; user: User }> = {
-        'superadmin@pass21.fr': {
-          password: 'super123',
-          user: {
-            id: '1',
-            name: 'Super Administrateur',
-            email: 'superadmin@pass21.fr',
-            role: 'SUPER_ADMIN',
-            permissions: ['all']
-          }
-        },
-        'admin@pass21.fr': {
-          password: 'admin123',
-          user: {
-            id: '2',
-            name: 'Administrateur',
-            email: 'admin@pass21.fr',
-            role: 'ADMIN',
-            permissions: ['users', 'residents', 'houses', 'services', 'tasks', 'settings']
-          }
-        },
-        'encadrant@pass21.fr': {
-          password: 'encadrant123',
-          user: {
-            id: '4',
-            name: 'Encadrant',
-            email: 'encadrant@pass21.fr',
-            role: 'ENCADRANT',
-            permissions: ['residents', 'tasks', 'services']
-          }
-        },
-        'resident@pass21.fr': {
-          password: 'resident123',
-          user: {
-            id: '5',
-            name: 'Marie Dupont',
-            email: 'resident@pass21.fr',
-            role: 'RESIDENT',
-            permissions: ['profile', 'services']
-          }
-        }
-      };
-
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-
-      const userAccount = mockUsers[email];
-      if (userAccount && userAccount.password === password) {
-        setUser(userAccount.user);
-        localStorage.setItem('user', JSON.stringify(userAccount.user));
+      const { session } = await AuthService.signIn(email, password);
+      
+      if (session?.user) {
+        // User profile will be loaded by the auth state change listener
         return true;
       }
       
@@ -117,27 +140,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    router.push('/login');
+  const logout = async () => {
+    try {
+      await AuthService.signOut();
+      setUser(null);
+      setSession(null);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout even if API call fails
+      setUser(null);
+      setSession(null);
+      router.push('/login');
+    }
   };
 
   const updateProfile = async (profileData: Partial<User>): Promise<boolean> => {
     try {
       setIsLoading(true);
       
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (user) {
-        const updatedUser = { ...user, ...profileData };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        return true;
+      if (!user) {
+        return false;
       }
+
+      // Convert User interface fields to database fields
+      const dbUpdates: any = {};
+      if (profileData.name) dbUpdates.name = profileData.name;
+      if (profileData.phone) dbUpdates.phone = profileData.phone;
+      if (profileData.address) dbUpdates.address = profileData.address;
+      if (profileData.birth_date) dbUpdates.birth_date = profileData.birth_date;
+      if (profileData.bio) dbUpdates.bio = profileData.bio;
+      if (profileData.avatar) dbUpdates.avatar = profileData.avatar;
       
-      return false;
+      const updatedProfile = await AuthService.updateUserProfile(user.id, dbUpdates);
+      
+      const updatedUser: User = {
+        id: updatedProfile.id,
+        name: updatedProfile.name,
+        email: updatedProfile.email,
+        role: updatedProfile.role,
+        avatar: updatedProfile.avatar || undefined,
+        permissions: updatedProfile.permissions,
+        phone: updatedProfile.phone || undefined,
+        address: updatedProfile.address || undefined,
+        birth_date: updatedProfile.birth_date || undefined,
+        bio: updatedProfile.bio || undefined,
+        created_at: updatedProfile.created_at,
+        updated_at: updatedProfile.updated_at,
+      };
+      
+      setUser(updatedUser);
+      return true;
     } catch (error) {
       console.error('Profile update error:', error);
       return false;
@@ -146,13 +199,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const resetPassword = async (email: string): Promise<void> => {
+    try {
+      await AuthService.resetPassword(email);
+    } catch (error) {
+      console.error('Reset password error:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
+    session,
     isLoading,
     login,
     logout,
-    isAuthenticated: !!user,
-    updateProfile
+    isAuthenticated: !!user && !!session,
+    updateProfile,
+    resetPassword
   };
 
   return (
