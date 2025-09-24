@@ -265,6 +265,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    // During SSG/SSR or on public routes, return a fallback context
+    if (typeof window === 'undefined') {
+      // Server-side rendering fallback
+      return {
+        user: null,
+        session: null,
+        isLoading: false,
+        login: async () => false,
+        logout: async () => {},
+        isAuthenticated: false,
+        updateProfile: async () => false,
+        resetPassword: async () => {},
+      };
+    }
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
