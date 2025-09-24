@@ -22,8 +22,10 @@ const queryClient = new QueryClient({
 // Define public routes that don't require authentication
 const publicRoutes = [
   '/login',
+  '/login-old',
   '/logout',
   '/unauthorized',
+  '/auth/reset-password',
   '/', // Landing page
 ];
 
@@ -36,15 +38,36 @@ interface AppContentProps {
 function AppContent({ Component, pageProps, pathname }: AppContentProps) {
   const isPublicRoute = publicRoutes.includes(pathname);
   
-  if (isPublicRoute) {
+  // DEBUG MODE: Bypass protection for debugging
+  const isDebugMode = process.env.NODE_ENV === 'development' && pathname === '/debug';
+  
+  if (isPublicRoute || isDebugMode) {
     return <Component {...pageProps} />;
   }
   
-  return (
-    <ProtectedRoute>
-      <Component {...pageProps} />
-    </ProtectedRoute>
+  // For debugging: if we can't authenticate, show a direct link to login
+  const DebugFallback = () => (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-white mb-4">Problème d'authentification</h1>
+        <p className="text-gray-400 mb-6">Impossible d'initialiser l'authentification</p>
+        <a href="/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Aller à la page de connexion
+        </a>
+      </div>
+    </div>
   );
+  
+  try {
+    return (
+      <ProtectedRoute>
+        <Component {...pageProps} />
+      </ProtectedRoute>
+    );
+  } catch (error) {
+    console.error('ProtectedRoute error:', error);
+    return <DebugFallback />;
+  }
 }
 
 export default function App({ Component, pageProps }: AppProps) {
