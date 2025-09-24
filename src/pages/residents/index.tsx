@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
 import { StatsCard, Badge } from '@/components/ui';
-import { Plus, Eye, Edit, Phone, Mail, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 import type { Resident, ResidentStatus, Gender, TableColumn } from '@/types';
 import { StorageService } from '@/services/storageService';
 
@@ -198,37 +198,14 @@ const ResidentsPage: React.FC = () => {
     }
   ];
 
-  const handleViewResident = (resident: typeof mockResidents[0]) => {
-    console.log('Voir résident:', resident.id);
-    // TODO: Navigate to resident detail page
-  };
-
   const handleEditResident = (resident: typeof mockResidents[0]) => {
-    console.log('Modifier résident:', resident.id);
-    // TODO: Navigate to resident edit page
-  };
-
-  const handleCallEmergencyContact = (resident: typeof mockResidents[0]) => {
-    const phone = resident.emergencyContact.phone;
-    if (phone) {
-      window.open(`tel:${phone}`, '_self');
-    }
+    router.push(`/residents/edit/${resident.id}`);
   };
 
   const actions = [
     {
-      label: 'Voir',
-      onClick: handleViewResident,
-      variant: 'ghost' as const
-    },
-    {
       label: 'Modifier',
       onClick: handleEditResident,
-      variant: 'ghost' as const
-    },
-    {
-      label: 'Appeler',
-      onClick: handleCallEmergencyContact,
       variant: 'ghost' as const
     }
   ];
@@ -302,7 +279,6 @@ const ResidentsPage: React.FC = () => {
             pagination={true}
             pageSize={10}
             emptyMessage="Aucun résident trouvé"
-            onRowClick={handleViewResident}
           />
         </main>
       </div>
