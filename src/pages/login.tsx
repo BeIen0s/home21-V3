@@ -5,13 +5,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { 
   Eye, 
   EyeOff, 
   Lock, 
   Mail, 
-  Shield, 
   AlertCircle,
   Home as HomeIcon
 } from 'lucide-react';
@@ -19,7 +18,6 @@ import {
 interface LoginForm {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 interface LoginError {
@@ -40,8 +38,7 @@ const LoginPage: React.FC = () => {
   
   const [formData, setFormData] = useState<LoginForm>({
     email: '',
-    password: '',
-    rememberMe: false
+    password: ''
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -51,7 +48,7 @@ const LoginPage: React.FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
 
-  const handleInputChange = (field: keyof LoginForm, value: string | boolean) => {
+  const handleInputChange = (field: keyof LoginForm, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -135,23 +132,9 @@ const LoginPage: React.FC = () => {
           field: 'general', 
           message: 'Email ou mot de passe incorrect. Vérifiez vos identifiants.' 
         });
-          
-          if (newAttempts >= 5) {
-            setIsLocked(true);
-            setLockoutTime(new Date(Date.now() + 15 * 60 * 1000)); // 15 minutes lockout
-            setError({ 
-              field: 'general', 
-              message: 'Trop de tentatives échouées. Compte verrouillé pour 15 minutes.' 
-            });
-          } else {
-            setError({ 
-              field: 'general', 
-              message: `Email ou mot de passe incorrect. ${5 - newAttempts} tentative${5 - newAttempts > 1 ? 's' : ''} restante${5 - newAttempts > 1 ? 's' : ''}` 
-            });
-          }
-        }
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError({ 
         field: 'general', 
         message: 'Erreur de connexion. Veuillez réessayer.' 
@@ -161,27 +144,16 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    // TODO: Implement forgot password flow
-    alert('Fonctionnalité "Mot de passe oublié" à implémenter');
-  };
-
-  const handleBackToLogin = () => {
-    setShowTwoFactor(false);
-    setFormData(prev => ({ ...prev, twoFactorCode: '' }));
-    setError(null);
-  };
-
-  // Show loading or redirect if already authenticated
+  // Show loading if checking auth
   if (authLoading) {
     return (
       <Layout
-        title="Pass21 - Connexion"
-        description="Connectez-vous à votre compte Pass21"
+        title="Home21 - Connexion"
+        description="Connectez-vous à votre compte Home21"
         showNavbar={false}
         showFooter={false}
       >
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         </div>
       </Layout>
@@ -194,12 +166,12 @@ const LoginPage: React.FC = () => {
 
   return (
     <Layout
-      title="Pass21 - Connexion"
-      description="Connectez-vous à votre compte Pass21"
+      title="Home21 - Connexion"
+      description="Connectez-vous à votre compte Home21"
       showNavbar={false}
       showFooter={false}
     >
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
           {/* Logo and Header */}
           <div className="text-center mb-8">
@@ -207,176 +179,157 @@ const LoginPage: React.FC = () => {
               <div className="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                 <HomeIcon className="h-7 w-7 text-white" />
               </div>
-              <span className="ml-3 text-2xl font-bold text-gray-900">Pass21</span>
+              <span className="ml-3 text-2xl font-bold text-gray-100">Home21</span>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {showTwoFactor ? 'Vérification en deux étapes' : 'Connexion'}
+            <h1 className="text-2xl font-bold text-gray-100 mb-2">
+              Connexion
             </h1>
-            <p className="text-gray-600">
-              {showTwoFactor 
-                ? 'Saisissez le code de vérification envoyé sur votre appareil'
-                : 'Accédez à votre espace de gestion Pass21'
-              }
+            <p className="text-gray-400">
+              Accédez à votre espace de gestion Home21
             </p>
           </div>
 
-          {/* Login Card */}
-          <Card className="shadow-xl border-0">
-            <CardContent className="p-6">
-              {/* Error Alert */}
-              {error && (
-                <div className={`mb-4 p-3 rounded-lg flex items-center ${
-                  error.field === 'general' ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700'
-                }`}>
-                  <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm">{error.message}</span>
-                </div>
-              )}
+          {/* Reset Password Success */}
+          {resetSuccess && (
+            <div className="mb-4 p-4 bg-green-900 text-green-200 rounded-lg">
+              Un lien de réinitialisation a été envoyé à votre adresse email.
+            </div>
+          )}
 
-              {/* Demo Credentials Info */}
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-blue-700">
-                    <p className="font-medium mb-2">Comptes de démonstration :</p>
-                    <div className="space-y-1">
-                      <p><strong>Super Admin:</strong> superadmin@pass21.fr / super123 (2FA: 123456)</p>
-                      <p><strong>Admin:</strong> admin@pass21.fr / admin123</p>
-                      <p><strong>Encadrant:</strong> encadrant@pass21.fr / encadrant123</p>
-                      <p><strong>Résident:</strong> resident@pass21.fr / resident123</p>
-                    </div>
+          {/* Reset Password Form */}
+          {showResetPassword ? (
+            <Card className="shadow-xl border border-gray-700 bg-gray-800">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-medium text-gray-100 mb-4">
+                  Réinitialiser le mot de passe
+                </h3>
+                
+                {error && (
+                  <div className="mb-4 p-3 rounded-lg flex items-center bg-red-900 text-red-200">
+                    <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="text-sm">{error.message}</span>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Input
+                      label="Adresse email"
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="votre.email@example.com"
+                      disabled={isLoading}
+                      className="pl-10 bg-gray-700 border-gray-600 text-gray-100"
+                    />
+                    <Mail className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowResetPassword(false)}
+                      disabled={isLoading}
+                      className="flex-1 text-gray-400 hover:text-gray-200"
+                    >
+                      Annuler
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleResetPassword}
+                      loading={isLoading}
+                      className="flex-1 bg-primary-600 hover:bg-primary-700"
+                    >
+                      Envoyer le lien
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          ) : (
+            /* Login Form */
+            <Card className="shadow-xl border border-gray-700 bg-gray-800">
+              <CardContent className="p-6">
+                {/* Error Alert */}
+                {error && (
+                  <div className="mb-4 p-3 rounded-lg flex items-center bg-red-900 text-red-200">
+                    <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="text-sm">{error.message}</span>
+                  </div>
+                )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {!showTwoFactor ? (
-                  <>
-                    {/* Email Field */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Email Field */}
+                  <div className="relative">
                     <Input
                       label="Adresse email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       error={error?.field === 'email' ? error.message : undefined}
-                      placeholder="votre.email@pass21.fr"
+                      placeholder="admin@home21.com"
                       disabled={isLoading}
-                      className="pl-10"
+                      className="pl-10 bg-gray-700 border-gray-600 text-gray-100"
                     />
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
-                    </div>
+                    <Mail className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
+                  </div>
 
-                    {/* Password Field */}
-                    <div className="relative">
-                      <Input
-                        label="Mot de passe"
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={(e) => handleInputChange('password', e.target.value)}
-                        error={error?.field === 'password' ? error.message : undefined}
-                        placeholder="Votre mot de passe"
-                        disabled={isLoading}
-                        className="pl-10 pr-10"
-                      />
-                      <Lock className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-
-                    {/* Remember Me */}
-                    <div className="flex items-center justify-between">
-                      <Checkbox
-                        checked={formData.rememberMe}
-                        onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
-                        label="Se souvenir de moi"
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleForgotPassword}
-                        className="text-sm text-primary-600 hover:text-primary-500"
-                        disabled={isLoading}
-                      >
-                        Mot de passe oublié ?
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Two Factor Code */}
-                    <div className="relative">
-                      <Input
-                        label="Code de vérification"
-                        type="text"
-                        value={formData.twoFactorCode || ''}
-                        onChange={(e) => handleInputChange('twoFactorCode', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        error={error?.field === 'twoFactor' ? error.message : undefined}
-                        placeholder="123456"
-                        disabled={isLoading}
-                        className="pl-10 text-center text-lg tracking-widest"
-                        maxLength={6}
-                      />
-                      <Shield className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
-                    </div>
-
+                  {/* Password Field */}
+                  <div className="relative">
+                    <Input
+                      label="Mot de passe"
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      error={error?.field === 'password' ? error.message : undefined}
+                      placeholder="Votre mot de passe"
+                      disabled={isLoading}
+                      className="pl-10 pr-10 bg-gray-700 border-gray-600 text-gray-100"
+                    />
+                    <Lock className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
                     <button
                       type="button"
-                      onClick={handleBackToLogin}
-                      className="text-sm text-gray-600 hover:text-gray-800"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-200"
                       disabled={isLoading}
                     >
-                      ← Retour à la connexion
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
-                  </>
-                )}
+                  </div>
 
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isLoading || isLocked}
-                  variant="primary"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {showTwoFactor ? 'Vérification...' : 'Connexion...'}
-                    </div>
-                  ) : (
-                    showTwoFactor ? 'Vérifier le code' : 'Se connecter'
-                  )}
-                </Button>
-              </form>
+                  {/* Forgot Password */}
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(true)}
+                      className="text-sm text-primary-400 hover:text-primary-300"
+                      disabled={isLoading}
+                    >
+                      Mot de passe oublié ?
+                    </button>
+                  </div>
 
-              {/* Security Notice */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="flex items-center text-xs text-gray-500">
-                  <Shield className="h-3 w-3 mr-1" />
-                  <span>Connexion sécurisée • SSL/TLS chiffré</span>
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    loading={isLoading}
+                    className="w-full bg-primary-600 hover:bg-primary-700"
+                  >
+                    Se connecter
+                  </Button>
+                </form>
+
+                {/* Demo Info */}
+                <div className="mt-6 p-3 bg-blue-900 rounded-lg border border-blue-700">
+                  <div className="text-xs text-blue-200">
+                    <p className="font-medium mb-2">Pour tester l'application :</p>
+                    <p>Créez un compte dans Supabase Auth avec admin@home21.com</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Footer Links */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
-              Besoin d'aide ?{' '}
-              <Link href="/contact" className="text-primary-600 hover:text-primary-500">
-                Contactez le support
-              </Link>
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              © 2024 Pass21. Tous droits réservés.
-            </p>
-          </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </Layout>
