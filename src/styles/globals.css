@@ -8,7 +8,7 @@
   }
   
   body {
-    @apply text-secondary-900 bg-white;
+    @apply text-gray-100 bg-gray-900;
   }
 }
 
@@ -19,7 +19,7 @@
   }
   
   .prose {
-    @apply text-secondary-700 leading-relaxed;
+    @apply text-gray-300 leading-relaxed;
   }
   
   .prose h1,
@@ -28,18 +28,18 @@
   .prose h4,
   .prose h5,
   .prose h6 {
-    @apply text-secondary-900 font-semibold;
+    @apply text-gray-100 font-semibold;
   }
 }
 
 @layer utilities {
   /* Custom utility classes */
   .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent;
   }
   
   .shadow-soft {
-    box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.3);
   }
   
   .animate-fade-in {
@@ -115,4 +115,49 @@
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+/* Global Dark Theme Overrides */
+.bg-white {
+  @apply bg-gray-800 !important;
+}
+
+.text-gray-900 {
+  @apply text-gray-100 !important;
+}
+
+.text-gray-800 {
+  @apply text-gray-200 !important;
+}
+
+.text-gray-700 {
+  @apply text-gray-300 !important;
+}
+
+.text-gray-600 {
+  @apply text-gray-400 !important;
+}
+
+.bg-gray-50 {
+  @apply bg-gray-700 !important;
+}
+
+.bg-gray-100 {
+  @apply bg-gray-700 !important;
+}
+
+.border-gray-200 {
+  @apply border-gray-600 !important;
+}
+
+.border-gray-300 {
+  @apply border-gray-600 !important;
+}
+
+.hover\:bg-gray-50:hover {
+  @apply hover:bg-gray-700 !important;
+}
+
+.hover\:bg-gray-100:hover {
+  @apply hover:bg-gray-700 !important;
 }

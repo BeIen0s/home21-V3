@@ -11,11 +11,11 @@ const buttonVariants = cva(
         primary:
           'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm hover:shadow-md',
         secondary:
-          'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 shadow-sm hover:shadow-md',
+          'bg-gray-800 dark:bg-gray-800 text-gray-200 border border-gray-600 hover:bg-gray-700 active:bg-gray-600 shadow-sm hover:shadow-md',
         outline:
-          'border border-primary-600 bg-transparent text-primary-600 hover:bg-primary-50 active:bg-primary-100',
+          'border border-primary-500 bg-transparent text-primary-400 hover:bg-gray-800 active:bg-gray-700',
         ghost:
-          'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200',
+          'text-gray-300 hover:bg-gray-800 hover:text-gray-100 active:bg-gray-700',
         success:
           'bg-green-600 text-white hover:bg-green-700 active:bg-green-800 shadow-sm hover:shadow-md',
         warning:

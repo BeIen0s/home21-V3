@@ -48,9 +48,14 @@ export const Layout: React.FC<LayoutProps> = ({
         <meta name="description" content={description} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.classList.add('dark')`
+          }}
+        />
       </Head>
 
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-gray-900 dark:bg-gray-900 flex flex-col">
         {showNavbar && (
           user && isAuthenticatedPage ? (
             <AppNavigation />

@@ -122,16 +122,16 @@ export const AppNavigation: React.FC = () => {
 
   const getRoleBadgeColor = (role: string) => {
     const colors = {
-      'SUPER_ADMIN': 'bg-red-100 text-red-800',
-      'ADMIN': 'bg-purple-100 text-purple-800',
-      'ENCADRANT': 'bg-green-100 text-green-800',
-      'RESIDENT': 'bg-blue-100 text-blue-800'
+      'SUPER_ADMIN': 'bg-red-900 text-red-200',
+      'ADMIN': 'bg-purple-900 text-purple-200',
+      'ENCADRANT': 'bg-green-900 text-green-200',
+      'RESIDENT': 'bg-blue-900 text-blue-200'
     };
-    return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[role as keyof typeof colors] || 'bg-gray-800 text-gray-200';
   };
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200">
+    <nav className="bg-gray-800 shadow-lg border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -140,7 +140,7 @@ export const AppNavigation: React.FC = () => {
               <div className="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Home className="h-6 w-6 text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-gray-900">
+              <span className="ml-3 text-xl font-bold text-gray-100">
                 Pass21
               </span>
             </Link>
@@ -159,11 +159,11 @@ export const AppNavigation: React.FC = () => {
                   className={cn(
                     'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors relative group',
                     isActive 
-                      ? 'bg-primary-50 text-primary-700 border border-primary-200' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-primary-900 text-primary-200 border border-primary-700' 
+                      : 'text-gray-300 hover:text-gray-100 hover:bg-gray-700'
                   )}
                 >
-                  <Icon className={cn('h-4 w-4 mr-2', isActive ? 'text-primary-600' : 'text-gray-400')} />
+                  <Icon className={cn('h-4 w-4 mr-2', isActive ? 'text-primary-300' : 'text-gray-400')} />
                   {item.name}
                   
                   {/* Tooltip */}
@@ -178,18 +178,18 @@ export const AppNavigation: React.FC = () => {
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
             {isLoading ? (
-              <div className="h-8 w-32 bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-8 w-32 bg-gray-600 animate-pulse rounded"></div>
             ) : user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-3 text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="flex items-center space-x-3 text-gray-200 hover:text-gray-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary-600" />
+                  <div className="h-8 w-8 bg-primary-800 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-primary-200" />
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-medium">{user.name}</div>
+                    <div className="text-sm font-medium text-gray-100">{user.name}</div>
                     <div className={cn('text-xs px-2 py-0.5 rounded-full', getRoleBadgeColor(currentUserRole))}>
                       {getRoleDisplayName(currentUserRole)}
                     </div>
@@ -199,19 +199,19 @@ export const AppNavigation: React.FC = () => {
 
                 {/* User Menu Dropdown */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-600 py-1 z-50">
                     <Link
                       href="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      className="flex items-center px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <User className="h-4 w-4 mr-2" />
                       Mon Profil
                     </Link>
-                    <div className="border-t border-gray-100"></div>
+                    <div className="border-t border-gray-600"></div>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-900/20"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Déconnexion
@@ -234,7 +234,7 @@ export const AppNavigation: React.FC = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-600 hover:text-gray-900 p-2"
+              className="text-gray-300 hover:text-gray-100 p-2"
             >
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6" />
