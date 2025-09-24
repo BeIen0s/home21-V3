@@ -40,33 +40,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Check auth state and set up listener
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const initializeAuth = async () => {
+      console.log('🔄 Starting auth initialization...');
+      
+      // Safety timeout to prevent infinite loading
+      timeoutId = setTimeout(() => {
+        if (mounted) {
+          console.warn('⏰ Auth initialization timeout, setting loading to false');
+          setIsLoading(false);
+        }
+      }, 10000); // 10 seconds timeout
+
       try {
+        console.log('📡 Getting initial session...');
         // Get initial session
         const initialSession = await AuthService.getCurrentSession();
-        
+        console.log('📡 Initial session:', initialSession ? 'Found' : 'Not found');
         if (mounted) {
           setSession(initialSession);
           
           if (initialSession?.user) {
             // Get user profile from database
             const userProfile = await AuthService.getUserProfile(initialSession.user.id);
-            if (userProfile && mounted) {
-              setUser({
-                id: userProfile.id,
-                name: userProfile.name,
-                email: userProfile.email,
-                role: userProfile.role,
-                avatar: userProfile.avatar || undefined,
-                permissions: userProfile.permissions,
-                phone: userProfile.phone || undefined,
-                address: userProfile.address || undefined,
-                birth_date: userProfile.birth_date || undefined,
-                bio: userProfile.bio || undefined,
-                created_at: userProfile.created_at,
-                updated_at: userProfile.updated_at,
-              });
+            
+            if (mounted) {
+              if (userProfile) {
+                setUser({
+                  id: userProfile.id,
+                  name: userProfile.name,
+                  email: userProfile.email,
+                  role: userProfile.role,
+                  avatar: userProfile.avatar || undefined,
+                  permissions: userProfile.permissions,
+                  phone: userProfile.phone || undefined,
+                  address: userProfile.address || undefined,
+                  birth_date: userProfile.birth_date || undefined,
+                  bio: userProfile.bio || undefined,
+                  created_at: userProfile.created_at,
+                  updated_at: userProfile.updated_at,
+                });
+              } else {
+                // User profile not found in database, clear session
+                console.warn('User profile not found in database, signing out');
+                setSession(null);
+                setUser(null);
+              }
             }
           }
         }
@@ -75,6 +95,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } finally {
         if (mounted) {
           setIsLoading(false);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
         }
       }
     };
@@ -90,24 +113,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (event === 'SIGNED_IN' && session?.user) {
         try {
           const userProfile = await AuthService.getUserProfile(session.user.id);
-          if (userProfile && mounted) {
-            setUser({
-              id: userProfile.id,
-              name: userProfile.name,
-              email: userProfile.email,
-              role: userProfile.role,
-              avatar: userProfile.avatar || undefined,
-              permissions: userProfile.permissions,
-              phone: userProfile.phone || undefined,
-              address: userProfile.address || undefined,
-              birth_date: userProfile.birth_date || undefined,
-              bio: userProfile.bio || undefined,
-              created_at: userProfile.created_at,
-              updated_at: userProfile.updated_at,
-            });
+          
+          if (mounted) {
+            if (userProfile) {
+              setUser({
+                id: userProfile.id,
+                name: userProfile.name,
+                email: userProfile.email,
+                role: userProfile.role,
+                avatar: userProfile.avatar || undefined,
+                permissions: userProfile.permissions,
+                phone: userProfile.phone || undefined,
+                address: userProfile.address || undefined,
+                birth_date: userProfile.birth_date || undefined,
+                bio: userProfile.bio || undefined,
+                created_at: userProfile.created_at,
+                updated_at: userProfile.updated_at,
+              });
+            } else {
+              console.warn('User profile not found after sign in, user may need to be added to users table');
+              // Don't sign out immediately, let the user continue to login page
+              setUser(null);
+            }
           }
         } catch (error) {
           console.error('Error loading user profile:', error);
+          if (mounted) {
+            setUser(null);
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -116,6 +149,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, []);
