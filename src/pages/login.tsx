@@ -5,7 +5,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { 
   Eye, 
@@ -14,7 +13,6 @@ import {
   Mail, 
   Shield, 
   AlertCircle,
-  CheckCircle,
   Home as HomeIcon
 } from 'lucide-react';
 
@@ -22,17 +20,16 @@ interface LoginForm {
   email: string;
   password: string;
   rememberMe: boolean;
-  twoFactorCode?: string;
 }
 
 interface LoginError {
-  field?: 'email' | 'password' | 'twoFactor' | 'general';
+  field?: 'email' | 'password' | 'general';
   message: string;
 }
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const { login: authLogin, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login: authLogin, isAuthenticated, isLoading: authLoading, resetPassword } = useAuth();
   
   // Redirect if already authenticated
   useEffect(() => {
@@ -44,17 +41,15 @@ const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState<LoginForm>({
     email: '',
     password: '',
-    rememberMe: false,
-    twoFactorCode: ''
+    rememberMe: false
   });
   
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<LoginError | null>(null);
-  const [showTwoFactor, setShowTwoFactor] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
-  const [lockoutTime, setLockoutTime] = useState<Date | null>(null);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleInputChange = (field: keyof LoginForm, value: string | boolean) => {
     setFormData(prev => ({
@@ -89,68 +84,40 @@ const LoginPage: React.FC = () => {
       return false;
     }
 
-    if (showTwoFactor && (!formData.twoFactorCode || formData.twoFactorCode.length !== 6)) {
-      setError({ field: 'twoFactor', message: 'Veuillez saisir un code à 6 chiffres' });
-      return false;
-    }
-
     return true;
   };
 
-  const simulateLogin = async (): Promise<{ success: boolean; requiresTwoFactor?: boolean; user?: any }> => {
-    // Simulation d'une API de connexion
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simulate different users for demo
-        // Mock authentication with new role system
-        const mockUsers: Record<string, { password: string; user: any; requiresTwoFactor?: boolean }> = {
-          'superadmin@pass21.fr': {
-            password: 'super123',
-            user: { id: '1', name: 'Super Administrateur', email: 'superadmin@pass21.fr', role: 'SUPER_ADMIN' },
-            requiresTwoFactor: true
-          },
-          'admin@pass21.fr': {
-            password: 'admin123', 
-            user: { id: '2', name: 'Administrateur', email: 'admin@pass21.fr', role: 'ADMIN' }
-          },
-          'encadrant@pass21.fr': {
-            password: 'encadrant123',
-            user: { id: '4', name: 'Encadrant', email: 'encadrant@pass21.fr', role: 'ENCADRANT' }
-          },
-          'resident@pass21.fr': {
-            password: 'resident123',
-            user: { id: '5', name: 'Marie Dupont', email: 'resident@pass21.fr', role: 'RESIDENT' }
-          }
-        };
-        
-        const userAccount = mockUsers[formData.email];
-        if (userAccount && userAccount.password === formData.password) {
-          if (userAccount.requiresTwoFactor && !showTwoFactor) {
-            resolve({ success: true, requiresTwoFactor: true });
-          } else if (userAccount.requiresTwoFactor && formData.twoFactorCode === '123456') {
-            resolve({ success: true, user: userAccount.user });
-          } else if (!userAccount.requiresTwoFactor) {
-            resolve({ success: true, user: userAccount.user });
-          } else {
-            resolve({ success: false });
-          }
-        } else {
-          resolve({ success: false });
-        }
-      }, 1500);
-    });
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      setError({ field: 'email', message: 'Veuillez saisir votre adresse email' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(resetEmail)) {
+      setError({ field: 'email', message: 'Veuillez saisir une adresse email valide' });
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await resetPassword(resetEmail);
+      setResetSuccess(true);
+    } catch (error) {
+      console.error('Reset password error:', error);
+      setError({
+        field: 'general',
+        message: 'Erreur lors de l\'envoi du lien de réinitialisation. Vérifiez votre adresse email.'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isLocked) {
-      setError({ 
-        field: 'general', 
-        message: 'Compte temporairement verrouillé. Réessayez dans quelques minutes.' 
-      });
-      return;
-    }
 
     if (!validateForm()) {
       return;
@@ -160,45 +127,14 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      // For 2FA flow, we still need the custom logic
-      if (showTwoFactor) {
-        const result = await simulateLogin();
-        if (result.success && result.user) {
-          // Use the auth hook to set the user and redirect
-          localStorage.setItem('user', JSON.stringify(result.user));
-          router.push('/dashboard');
-        } else {
-          setError({ 
-            field: 'twoFactor', 
-            message: 'Code de vérification incorrect' 
-          });
-        }
+      const success = await authLogin(formData.email, formData.password);
+      if (success) {
+        router.push('/dashboard');
       } else {
-        // Check if this user requires 2FA first
-        const result = await simulateLogin();
-        
-        if (result.success) {
-          if (result.requiresTwoFactor) {
-            setShowTwoFactor(true);
-            setError(null);
-          } else {
-            // Use the auth hook for regular login
-            const success = await authLogin(formData.email, formData.password);
-            if (success) {
-              router.push('/dashboard');
-            } else {
-              const newAttempts = loginAttempts + 1;
-              setLoginAttempts(newAttempts);
-              setError({ 
-                field: 'general', 
-                message: `Email ou mot de passe incorrect. ${5 - newAttempts} tentative${5 - newAttempts > 1 ? 's' : ''} restante${5 - newAttempts > 1 ? 's' : ''}` 
-              });
-            }
-          }
-          setLoginAttempts(0);
-        } else {
-          const newAttempts = loginAttempts + 1;
-          setLoginAttempts(newAttempts);
+        setError({ 
+          field: 'general', 
+          message: 'Email ou mot de passe incorrect. Vérifiez vos identifiants.' 
+        });
           
           if (newAttempts >= 5) {
             setIsLocked(true);
