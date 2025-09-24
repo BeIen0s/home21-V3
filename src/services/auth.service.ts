@@ -75,13 +75,18 @@ export class AuthService {
   // Get user profile from database
   static async getUserProfile(userId: string): Promise<AuthUser | null> {
     try {
-      console.log('Fetching user profile for ID:', userId);
+      console.log('🔍 Fetching user profile for ID:', userId);
       
+      const startTime = Date.now();
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
+      
+      const duration = Date.now() - startTime;
+      console.log(`⏱️ Query completed in ${duration}ms`);
+      console.log('📄 Query result - data:',</xmp> data, 'error:', error);
 
       if (error) {
         console.error('Supabase error fetching user profile:', error);
