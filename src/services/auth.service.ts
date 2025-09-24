@@ -86,7 +86,7 @@ export class AuthService {
       
       const duration = Date.now() - startTime;
       console.log(`⏱️ Query completed in ${duration}ms`);
-      console.log('📄 Query result - data:',</xmp> data, 'error:', error);
+      console.log('📄 Query result - data:', data, 'error:', error);
 
       if (error) {
         console.error('Supabase error fetching user profile:', error);
