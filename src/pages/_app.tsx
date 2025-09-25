@@ -10,12 +10,25 @@ const queryClient = new QueryClient();
 
 const publicRoutes = ['/login', '/'];
 
+// FLAG DE CONTRÔLE: Mettre à true pour désactiver complètement la protection
+const DISABLE_AUTH_PROTECTION = true;
+
 function AppContent({ Component, pageProps, pathname }: { Component: any; pageProps: any; pathname: string }) {
-  // Désactivation temporaire de la protection d'authentification
-  // Toutes les pages sont maintenant accessibles sans vérification
-  return <Component {...pageProps} />;
+  // Debug: Log environment info
+  console.log('📝 Environment Info:', {
+    pathname,
+    NODE_ENV: process.env.NODE_ENV,
+    DISABLE_AUTH_PROTECTION,
+    timestamp: new Date().toISOString()
+  });
   
-  /* Version avec protection (à restaurer si nécessaire) :
+  // Vérification explicite du flag de désactivation
+  if (DISABLE_AUTH_PROTECTION) {
+    console.log('🔓 Auth protection is DISABLED - All pages are accessible');
+    return <Component {...pageProps} />;
+  }
+
+  // Version avec protection (inactive quand DISABLE_AUTH_PROTECTION = true)
   const isPublicRoute = publicRoutes.includes(pathname);
   
   if (isPublicRoute) {
@@ -27,7 +40,6 @@ function AppContent({ Component, pageProps, pathname }: { Component: any; pagePr
       <Component {...pageProps} />
     </ProtectedRoute>
   );
-  */
 }
 
 export default function App({ Component, pageProps }: AppProps) {
