@@ -7,17 +7,19 @@ const HomePage: React.FC = () => {
   const router = useRouter();
   const { user, isLoading } = useAuth();
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        // User is logged in, redirect to dashboard
-        router.push('/dashboard');
-      } else {
-        // User is not logged in, redirect to login
-        router.push('/login');
-      }
-    }
-  }, [router, user, isLoading]);
+  // DÉSACTIVATION TEMPORAIRE de la redirection automatique
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     if (user) {
+  //       router.push('/dashboard');
+  //     } else {
+  //       router.push('/login');
+  //     }
+  //   }
+  // }, [router, user, isLoading]);
+  
+  console.log('🏠 HomePage: Redirection disabled - Showing homepage');
+  console.log('👤 User status:', { user: !!user, isLoading });
 
   return (
     <Layout
@@ -30,14 +32,32 @@ const HomePage: React.FC = () => {
             <span className="text-white font-bold text-2xl">P</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Pass21</h1>
-          <p className="text-gray-600">
-            {isLoading ? 'Vérification de l\'authentification...' : 'Redirection en cours...'}
+          <p className="text-gray-600 mb-6">
+            Bienvenue sur la plateforme de gestion Pass21
           </p>
-          {isLoading && (
-            <div className="mt-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
-            </div>
-          )}
+          
+          <div className="space-x-4">
+            <a 
+              href="/login" 
+              className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-md inline-block transition-colors"
+            >
+              Se connecter
+            </a>
+            <a 
+              href="/dashboard" 
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-md inline-block transition-colors"
+            >
+              Tableau de bord
+            </a>
+          </div>
+          
+          <div className="mt-8">
+            <p className="text-sm text-gray-500">
+              ✅ Redirection automatique désactivée<br/>
+              ✅ Navigation libre activée<br/>
+              ✅ Plus de vérification bloquante
+            </p>
+          </div>
         </div>
       </div>
     </Layout>
