@@ -2,6 +2,10 @@ import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/utils/cn';
 
+// Generate unique IDs for form fields
+let idCounter = 0;
+const generateId = () => `input-${++idCounter}`;
+
 const inputVariants = cva(
   'flex w-full rounded-md border bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200',
   {
@@ -33,22 +37,32 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, variant, size, label, error, helper, ...props }, ref) => {
+  ({ className, variant, size, label, error, helper, id, name, ...props }, ref) => {
+    // Generate unique ID if not provided
+    const inputId = React.useMemo(() => id || generateId(), [id]);
+    // Use name from props or fallback to ID
+    const inputName = name || inputId;
+    
     return (
       <div className="space-y-1">
         {label && (
-          <label className="block text-sm font-medium text-gray-700">
+          <label 
+            htmlFor={inputId}
+            className="block text-sm font-medium text-gray-700"
+          >
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <input
+          id={inputId}
+          name={inputName}
           className={cn(inputVariants({ variant: error ? 'error' : variant, size, className }))}
           ref={ref}
           {...props}
         />
         {error && (
-          <p className="text-xs text-red-600 flex items-center">
+          <p className="text-xs text-red-600 flex items-center" role="alert">
             <span className="mr-1">⚠</span>
             {error}
           </p>

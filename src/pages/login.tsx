@@ -125,6 +125,7 @@ const LoginPage: React.FC = () => {
 
     try {
       const success = await authLogin(formData.email, formData.password);
+      
       if (success) {
         router.push('/dashboard');
       } else {
@@ -214,12 +215,16 @@ const LoginPage: React.FC = () => {
                 <div className="space-y-4">
                   <div className="relative">
                     <Input
+                      id="reset-email"
+                      name="reset-email"
                       label="Adresse email"
                       type="email"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
                       placeholder="votre.email@example.com"
                       disabled={isLoading}
+                      autoComplete="email"
+                      required
                       className="pl-10 bg-gray-700 border-gray-600 text-gray-100"
                     />
                     <Mail className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
@@ -263,6 +268,8 @@ const LoginPage: React.FC = () => {
                   {/* Email Field */}
                   <div className="relative">
                     <Input
+                      id="email"
+                      name="email"
                       label="Adresse email"
                       type="email"
                       value={formData.email}
@@ -270,6 +277,8 @@ const LoginPage: React.FC = () => {
                       error={error?.field === 'email' ? error.message : undefined}
                       placeholder="admin@home21.com"
                       disabled={isLoading}
+                      autoComplete="email"
+                      required
                       className="pl-10 bg-gray-700 border-gray-600 text-gray-100"
                     />
                     <Mail className="absolute left-3 top-9 h-4 w-4 text-gray-400" />
@@ -278,6 +287,8 @@ const LoginPage: React.FC = () => {
                   {/* Password Field */}
                   <div className="relative">
                     <Input
+                      id="password"
+                      name="password"
                       label="Mot de passe"
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
@@ -285,6 +296,8 @@ const LoginPage: React.FC = () => {
                       error={error?.field === 'password' ? error.message : undefined}
                       placeholder="Votre mot de passe"
                       disabled={isLoading}
+                      autoComplete="current-password"
+                      required
                       className="pl-10 pr-10 bg-gray-700 border-gray-600 text-gray-100"
                     />
                     <Lock className="absolute left-3 top-9 h-4 w-4 text-gray-400" />

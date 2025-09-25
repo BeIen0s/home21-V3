@@ -11,15 +11,23 @@ export interface AuthUser extends DbUser {
 export class AuthService {
   // Sign in with email and password
   static async signIn(email: string, password: string) {
+    console.log('🔄 Tentative de connexion pour:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
+      console.error('❌ Erreur de connexion Supabase:', error);
       throw new Error(error.message);
     }
 
+    console.log('✅ Connexion Supabase réussie:', {
+      user: data.user?.email,
+      userId: data.user?.id
+    });
+    
     return data;
   }
 

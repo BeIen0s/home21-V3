@@ -45,6 +45,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initializeAuth = async () => {
       console.log('🔄 Starting auth initialization...');
       
+      // Check for bypass first
+      if (typeof window !== 'undefined') {
+        const bypassUser = localStorage.getItem('bypass_user');
+        const bypassSession = localStorage.getItem('bypass_session');
+        
+        if (bypassUser && bypassSession) {
+          console.log('🔧 Bypass user found, using localStorage auth');
+          const userData = JSON.parse(bypassUser);
+          const sessionData = JSON.parse(bypassSession);
+          
+          if (mounted) {
+            setUser(userData);
+            setSession(sessionData);
+            setIsLoading(false);
+          }
+          return;
+        }
+      }
+      
       // Safety timeout to prevent infinite loading
       timeoutId = setTimeout(() => {
         if (mounted) {
@@ -178,7 +197,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await AuthService.signOut();
+      // Check if using bypass
+      if (typeof window !== 'undefined' && localStorage.getItem('bypass_user')) {
+        console.log('🔧 Clearing bypass auth');
+        localStorage.removeItem('bypass_user');
+        localStorage.removeItem('bypass_session');
+      } else {
+        await AuthService.signOut();
+      }
+      
       setUser(null);
       setSession(null);
       router.push('/login');
@@ -267,11 +294,40 @@ const createFallbackAuthContext = () => ({
   user: null,
   session: null,
   isLoading: false,
-  login: async () => false,
-  logout: async () => {},
+  login: async (email: string, password: string) => {
+    try {
+      console.log('🔄 Fallback login for:', email);
+      const { session } = await AuthService.signIn(email, password);
+      if (session?.user) {
+        console.log('✅ Fallback login successful, redirecting...');
+        // Force reload to reinitialize with AuthProvider
+        window.location.href = '/dashboard';
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('❌ Fallback login error:', error);
+      throw error;
+    }
+  },
+  logout: async () => {
+    try {
+      await AuthService.signOut();
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  },
   isAuthenticated: false,
   updateProfile: async () => false,
-  resetPassword: async () => {},
+  resetPassword: async (email: string) => {
+    try {
+      await AuthService.resetPassword(email);
+    } catch (error) {
+      console.error('Reset password error:', error);
+      throw error;
+    }
+  },
 });
 
 export const useAuth = () => {
@@ -299,12 +355,12 @@ export const useAuth = () => {
   const currentPath = window.location.pathname;
   const publicRoutes = [
     '/',
-    '/login',
-    '/login-old', 
-    '/direct-login',
-    '/logout',
-    '/unauthorized',
-    '/auth/reset-password'
+  '/login',
+  '/login-old', 
+  '/direct-login',
+  '/logout',
+  '/unauthorized',
+  '/auth/reset-password'
   ];
   
   // Normalize path by removing trailing slash (except for root)
