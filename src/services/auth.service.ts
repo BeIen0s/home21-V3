@@ -86,11 +86,23 @@ export class AuthService {
       console.log('🔍 Fetching user profile for ID:', userId);
       
       const startTime = Date.now();
+      
+      // Test simple query first
+      console.log('🔍 Testing simple query...');
+      const { data: testData, error: testError } = await supabase
+        .from('users')
+        .select('count')
+        .limit(1);
+      
+      console.log('🔍 Test query result:', { testData, testError });
+      
+      // Main query
+      console.log('🔍 Running main query...');
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
+        .maybeSingle();
       
       const duration = Date.now() - startTime;
       console.log(`⏱️ Query completed in ${duration}ms`);
