@@ -13,13 +13,17 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔑 Tentative de connexion:', { email, password: '***' });
     setLoading(true);
     setError('');
 
     try {
+      console.log('🔄 Appel de signIn...');
       await signIn(email, password);
+      console.log('✅ Connexion réussie ! Redirection vers dashboard...');
       router.push('/dashboard');
     } catch (err: any) {
+      console.error('❌ Erreur de connexion:', err);
       setError(err.message || 'Erreur de connexion');
     } finally {
       setLoading(false);
@@ -33,6 +37,12 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-white mb-6 text-center">
             Connexion Home21
           </h1>
+          
+          {/* Infos de debug temporaires */}
+          <div className="mb-4 p-3 bg-blue-900 text-blue-200 rounded text-xs">
+            📝 Debug: Ouvrez la console (F12) pour voir les logs<br/>
+            📎 Test avec: sylvain@example.com / password123
+          </div>
           
           {error && (
             <div className="mb-4 p-3 bg-red-900 text-red-200 rounded">

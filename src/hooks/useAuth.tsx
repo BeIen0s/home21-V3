@@ -56,8 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    await auth.signIn(email, password);
-    // User will be updated via auth state change
+    console.log('📋 useAuth.signIn called with:', { email, password: '***' });
+    try {
+      console.log('🔄 Calling auth.signIn...');
+      const result = await auth.signIn(email, password);
+      console.log('✅ auth.signIn successful:', result);
+      // User will be updated via auth state change
+    } catch (error) {
+      console.error('❌ auth.signIn failed:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
