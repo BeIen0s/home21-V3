@@ -71,7 +71,7 @@ export const auth = {
       // Clear local storage manually as backup
       if (typeof window !== 'undefined') {
         localStorage.removeItem('supabase.auth.token');
-        localStorage.removeItem('sb-' + supabase.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token');
+        localStorage.removeItem('sb-' + (supabaseUrl || fallbackUrl).split('//')[1].split('.')[0] + '-auth-token');
         sessionStorage.clear();
       }
     } catch (error: any) {
