@@ -23,8 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const currentUser = await auth.getUser();
         setUser(currentUser);
-      } catch (error) {
-        console.error('Error checking user:', error);
+      } catch (error: any) {
+        console.error('Error checking user:', error?.message || error);
         setUser(null);
       } finally {
         setLoading(false);
@@ -33,29 +33,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = auth.onAuthChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const currentUser = await auth.getUser();
-        setUser(currentUser);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-      }
-    });
+    // Listen for auth changes with error handling
+    try {
+      const { data: { subscription } } = auth.onAuthChange(async (event, session) => {
+        try {
+          if (event === 'SIGNED_IN' && session) {
+            const currentUser = await auth.getUser();
+            setUser(currentUser);
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+          } else if (event === 'TOKEN_REFRESHED') {
+            // Handle token refresh
+            console.log('Token refreshed');
+          }
+        } catch (error: any) {
+          console.error('Auth state change error:', error?.message || error);
+          // On auth errors, clear the user state
+          setUser(null);
+        }
+      });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      return () => {
+        if (subscription && typeof subscription.unsubscribe === 'function') {
+          subscription.unsubscribe();
+        }
+      };
+    } catch (error: any) {
+      console.error('Failed to set up auth listener:', error?.message || error);
+      return () => {}; // Return empty cleanup function
+    }
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    await auth.signIn(email, password);
-    // User will be updated via auth state change
+    try {
+      await auth.signIn(email, password);
+      // User will be updated via auth state change
+    } catch (error: any) {
+      console.error('Sign in failed:', error?.message || error);
+      throw error; // Re-throw so the UI can handle the error
+    }
   };
 
   const signOut = async () => {
-    await auth.signOut();
-    setUser(null);
+    try {
+      await auth.signOut();
+    } catch (error: any) {
+      console.error('Sign out error:', error?.message || error);
+      // Even if sign out fails, clear the local state
+    } finally {
+      setUser(null);
+    }
   };
 
   const logout = signOut; // Alias for compatibility
