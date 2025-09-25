@@ -11,6 +11,11 @@ const queryClient = new QueryClient();
 const publicRoutes = ['/login', '/'];
 
 function AppContent({ Component, pageProps, pathname }: { Component: any; pageProps: any; pathname: string }) {
+  // Désactivation temporaire de la protection d'authentification
+  // Toutes les pages sont maintenant accessibles sans vérification
+  return <Component {...pageProps} />;
+  
+  /* Version avec protection (à restaurer si nécessaire) :
   const isPublicRoute = publicRoutes.includes(pathname);
   
   if (isPublicRoute) {
@@ -22,6 +27,7 @@ function AppContent({ Component, pageProps, pathname }: { Component: any; pagePr
       <Component {...pageProps} />
     </ProtectedRoute>
   );
+  */
 }
 
 export default function App({ Component, pageProps }: AppProps) {
