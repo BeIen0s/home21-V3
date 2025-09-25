@@ -119,7 +119,6 @@ export class AuthService {
         }
         throw new Error('Invalid session cleared');
       }
-      }
       
       const startTime = Date.now();
       
