@@ -5,11 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 
 const HomePage: React.FC = () => {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
     if (!isLoading) {
-      if (isAuthenticated) {
+      if (user) {
         // User is logged in, redirect to dashboard
         router.push('/dashboard');
       } else {
@@ -17,7 +17,7 @@ const HomePage: React.FC = () => {
         router.push('/login');
       }
     }
-  }, [router, isAuthenticated, isLoading]);
+  }, [router, user, isLoading]);
 
   return (
     <Layout

@@ -32,14 +32,14 @@ interface LoginError {
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
-  const { login: authLogin, isAuthenticated, isLoading: authLoading, resetPassword } = useAuth();
+  const { signIn: authLogin, user, isLoading: authLoading } = useAuth();
   
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
+    if (user && !authLoading) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [user, authLoading, router]);
   
   const [formData, setFormData] = useState<LoginForm>({
     email: '',
@@ -109,7 +109,10 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      await resetPassword(resetEmail);
+      // Note: resetPassword function not available in current auth context
+      // This would need to be implemented in the AuthService
+      throw new Error('Reset password functionality not implemented');
+      // await resetPassword(resetEmail);
       setResetSuccess(true);
     } catch (error) {
       console.error('Reset password error:', error);
@@ -133,15 +136,9 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      const success = await authLogin(formData.email, formData.password);
-      if (success) {
-        router.push('/dashboard');
-      } else {
-        setError({ 
-          field: 'general', 
-          message: 'Email ou mot de passe incorrect. Vérifiez vos identifiants.' 
-        });
-      }
+      await authLogin(formData.email, formData.password);
+      // If we reach here, login was successful
+      router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       setError({ 
@@ -180,7 +177,7 @@ const LoginPage: React.FC = () => {
     );
   }
 
-  if (isAuthenticated) {
+  if (user) {
     return null; // Will redirect via useEffect
   }
 

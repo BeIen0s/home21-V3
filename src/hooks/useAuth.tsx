@@ -5,8 +5,10 @@ import { auth, User } from '@/lib/auth';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,8 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const logout = signOut; // Alias for compatibility
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isLoading: loading, signIn, signOut, logout }}>
       {children}
     </AuthContext.Provider>
   );
