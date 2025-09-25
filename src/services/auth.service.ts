@@ -110,8 +110,15 @@ export class AuthService {
           }
         }
         
-        console.log('🔄 Session cleared, please refresh the page and login again');
-        return null;
+        console.log('🔄 Session cleared, redirecting to login...');
+        // Force redirect to login page
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 100);
+        }
+        throw new Error('Invalid session cleared');
+      }
       }
       
       const startTime = Date.now();

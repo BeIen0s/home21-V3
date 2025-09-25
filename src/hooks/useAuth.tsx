@@ -45,6 +45,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initializeAuth = async () => {
       console.log('🔄 Starting auth initialization...');
       
+      // Quick check for problematic session before any heavy operations
+      try {
+        const quickSession = await AuthService.getCurrentSession();
+        if (quickSession?.user?.id === '77c5af80-882a-46e1-bf69-7c4a7b1bd506') {
+          console.warn('⚠️ Invalid session detected early, cleaning up...');
+          await AuthService.signOut();
+          if (typeof window !== 'undefined') {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/login';
+          }
+          return;
+        }
+      } catch (error) {
+        console.error('Error in quick session check:', error);
+      }
+      
       // Check for bypass first
       if (typeof window !== 'undefined') {
         const bypassUser = localStorage.getItem('bypass_user');
@@ -78,11 +95,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const initialSession = await AuthService.getCurrentSession();
         console.log('📡 Initial session:', initialSession ? 'Found' : 'Not found');
         
-        // Check for problematic user ID and force refresh
+        // Check for problematic user ID and handle immediately
         if (initialSession?.user?.id === '77c5af80-882a-46e1-bf69-7c4a7b1bd506') {
-          console.warn('⚠️ Detected invalid session ID, forcing page refresh...');
+          console.warn('⚠️ Detected invalid session ID, clearing and redirecting...');
+          
+          // Clear session immediately
+          try {
+            await AuthService.signOut();
+          } catch (error) {
+            console.error('Error signing out:', error);
+          }
+          
+          // Clear all storage
           if (typeof window !== 'undefined') {
-            window.location.reload();
+            try {
+              localStorage.clear();
+              sessionStorage.clear();
+            } catch (error) {
+              console.error('Error clearing storage:', error);
+            }
+            
+            // Redirect to login instead of reload to avoid loops
+            window.location.href = '/login';
           }
           return;
         }
