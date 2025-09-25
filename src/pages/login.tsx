@@ -24,7 +24,13 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       console.error('❌ Erreur de connexion:', err);
-      setError(err.message || 'Erreur de connexion');
+      
+      // Si les identifiants sont invalides et que c'est un email de test, proposer de créer le compte
+      if (err.message?.includes('Invalid login credentials') && email.includes('example.com')) {
+        setError(`Utilisateur test inexistant. Utilisez les vrais identifiants de Sylvain ou créez ce compte dans Supabase.`);
+      } else {
+        setError(err.message || 'Erreur de connexion');
+      }
     } finally {
       setLoading(false);
     }
