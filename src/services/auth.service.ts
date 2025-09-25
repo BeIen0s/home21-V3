@@ -85,6 +85,35 @@ export class AuthService {
     try {
       console.log('🔍 Fetching user profile for ID:', userId);
       
+      // PERMANENT FIX: Handle known problematic user ID
+      if (userId === '77c5af80-882a-46e1-bf69-7c4a7b1bd506') {
+        console.warn('⚠️ Detected problematic user ID, attempting to sign out and clear session...');
+        try {
+          await this.signOut();
+        } catch (signOutError) {
+          console.error('Error during sign out:', signOutError);
+        }
+        
+        // Clear all possible storage locations
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.clear();
+            sessionStorage.clear();
+            // Clear any Supabase-specific storage
+            Object.keys(localStorage).forEach(key => {
+              if (key.includes('supabase') || key.includes('auth')) {
+                localStorage.removeItem(key);
+              }
+            });
+          } catch (storageError) {
+            console.error('Error clearing storage:', storageError);
+          }
+        }
+        
+        console.log('🔄 Session cleared, please refresh the page and login again');
+        return null;
+      }
+      
       const startTime = Date.now();
       
       // Create timeout promise

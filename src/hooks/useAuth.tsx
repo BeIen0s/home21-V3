@@ -77,6 +77,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Get initial session
         const initialSession = await AuthService.getCurrentSession();
         console.log('📡 Initial session:', initialSession ? 'Found' : 'Not found');
+        
+        // Check for problematic user ID and force refresh
+        if (initialSession?.user?.id === '77c5af80-882a-46e1-bf69-7c4a7b1bd506') {
+          console.warn('⚠️ Detected invalid session ID, forcing page refresh...');
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+          return;
+        }
+        
         if (mounted) {
           setSession(initialSession);
           
