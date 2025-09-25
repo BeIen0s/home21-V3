@@ -82,6 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Even if sign out fails, clear the local state
     } finally {
       setUser(null);
+      
+      // Force redirect to login page in production
+      if (typeof window !== 'undefined') {
+        // Clear any remaining auth tokens
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Force page reload and redirect to login
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 100);
+      }
     }
   };
 

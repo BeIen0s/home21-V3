@@ -61,11 +61,26 @@ export const auth = {
     }
 
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Force sign out with scope 'local' to clear all sessions
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      if (error) {
+        console.warn('Supabase sign out error:', error.message);
+        // Continue with local cleanup even if remote sign out fails
+      }
+      
+      // Clear local storage manually as backup
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('sb-' + supabase.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token');
+        sessionStorage.clear();
+      }
     } catch (error: any) {
       console.error('Sign out error:', error.message);
-      // Don't throw on sign out errors, just log them
+      // Don't throw on sign out errors, just clear local state
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
     }
   },
 

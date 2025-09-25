@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useLogout } from '@/hooks/useLogout';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 import { 
@@ -32,7 +33,8 @@ interface NavigationItem {
 
 export const AppNavigation: React.FC = () => {
   const router = useRouter();
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading } = useAuth();
+  const logout = useLogout();
   const {
     canAccessUsersPage,
     canAccessSettingsPage,
