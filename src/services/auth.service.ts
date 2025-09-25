@@ -87,22 +87,20 @@ export class AuthService {
       
       const startTime = Date.now();
       
-      // Test simple query first
-      console.log('🔍 Testing simple query...');
-      const { data: testData, error: testError } = await supabase
-        .from('users')
-        .select('count')
-        .limit(1);
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Database query timeout')), 5000); // 5 second timeout
+      });
       
-      console.log('🔍 Test query result:', { testData, testError });
-      
-      // Main query
-      console.log('🔍 Running main query...');
-      const { data, error } = await supabase
+      // Main query with timeout
+      console.log('🔍 Running main query with 5s timeout...');
+      const queryPromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
+      
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
       
       const duration = Date.now() - startTime;
       console.log(`⏱️ Query completed in ${duration}ms`);
@@ -129,7 +127,54 @@ export class AuthService {
 
       if (!data) {
         console.log('No user profile found for ID:', userId);
-        return null;
+        
+        // Try to get the authenticated user details and create profile
+        console.log('🌱 Attempting to create user profile from auth data...');
+        try {
+          const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+          
+          if (authError || !authUser || authUser.id !== userId) {
+            console.log('⚠️ Cannot create profile - no matching authenticated user');
+            return null;
+          }
+          
+          // Extract name from metadata or email
+          const name = authUser.user_metadata?.name || 
+                      authUser.user_metadata?.full_name || 
+                      authUser.email?.split('@')[0] || 
+                      'User';
+          
+          // Create user profile
+          const { data: newProfile, error: createError } = await supabase
+            .from('users')
+            .insert({
+              id: authUser.id,
+              email: authUser.email!,
+              name: name,
+              role: 'RESIDENT', // Default role
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+            
+          if (createError) {
+            console.error('❌ Failed to create user profile:', createError);
+            return null;
+          }
+          
+          console.log('✅ User profile created successfully:', newProfile);
+          
+          const permissions = this.getPermissionsByRole(newProfile.role);
+          return {
+            ...newProfile,
+            permissions,
+          };
+          
+        } catch (createErr) {
+          console.error('❌ Error creating user profile:', createErr);
+          return null;
+        }
       }
 
       console.log('User profile found:', data);
@@ -141,9 +186,17 @@ export class AuthService {
         ...data,
         permissions,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error in getUserProfile:', err);
-      return null; // Return null instead of throwing to prevent app crash
+      
+      // Handle specific timeout error
+      if (err.message === 'Database query timeout') {
+        console.warn('⏰ Database query timed out, user profile fetch failed');
+        return null;
+      }
+      
+      // For other database errors, still return null to prevent app crash
+      return null;
     }
   }
 
