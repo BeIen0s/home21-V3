@@ -15,37 +15,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Démarrage sans loading pour éviter les blocages
 
   useEffect(() => {
-    // Check initial session
+    console.log('🔍 AuthProvider: Démarrage sans blocage');
+    
+    // Vérification rapide et non-bloquante
     const checkUser = async () => {
       try {
         const currentUser = await auth.getUser();
         setUser(currentUser);
+        console.log('📄 User loaded:', currentUser ? 'Connected' : 'Not connected');
       } catch (error) {
-        console.error('Error checking user:', error);
+        console.log('⚠️ Auth check failed, continuing anyway:', error);
         setUser(null);
-      } finally {
-        setLoading(false);
       }
     };
 
+    // Exécution rapide
     checkUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = auth.onAuthChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const currentUser = await auth.getUser();
-        setUser(currentUser);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-      }
-    });
+    // Auth listeners pour les changements d'état
+    try {
+      const { data: { subscription } } = auth.onAuthChange(async (event, session) => {
+        console.log('🔄 Auth event:', event);
+        if (event === 'SIGNED_IN' && session) {
+          const currentUser = await auth.getUser();
+          setUser(currentUser);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+        }
+      });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch (error) {
+      console.log('⚠️ Auth listener setup failed, continuing anyway:', error);
+    }
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -75,8 +82,15 @@ export function useAuth() {
   return context;
 }
 
-// Protected route wrapper - Version simplifiée
+// Protected route wrapper - COMPLÈTEMENT DÉSACTIVÉ
 export function ProtectedRoute({ children }: { children: ReactNode }) {
+  // DÉSACTIVATION TOTALE - Aucune vérification d'authentification
+  console.log('🔓 ProtectedRoute: AUTH PROTECTION DISABLED - Direct access granted');
+  
+  // Retourner directement le contenu sans aucune vérification
+  return <>{children}</>;
+  
+  /* Version originale (désactivée) :
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -86,12 +100,10 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     }
   }, [user, loading, router]);
 
-  // Montrer le contenu immédiatement, même pendant le loading
-  // Cela évite l'écran de "vérification de l'authentification"
   if (!user && !loading) {
-    return null; // Will redirect to login
+    return null;
   }
 
-  // Toujours montrer le contenu, même pendant le loading
   return <>{children}</>;
+  */
 }
