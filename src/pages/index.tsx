@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,18 +38,18 @@ const HomePage: React.FC = () => {
           </p>
           
           <div className="space-x-4">
-            <a 
+            <Link 
               href="/login" 
               className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-md inline-block transition-colors"
             >
               Se connecter
-            </a>
-            <a 
+            </Link>
+            <Link 
               href="/dashboard" 
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-md inline-block transition-colors"
             >
               Tableau de bord
-            </a>
+            </Link>
           </div>
           
           <div className="mt-8">

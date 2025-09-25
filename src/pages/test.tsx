@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 // Page ultra-simple pour tester sans dépendances
 export default function TestPage() {
@@ -18,9 +19,9 @@ export default function TestPage() {
       
       <div style={{ marginTop: '40px' }}>
         <h2>🔗 Navigation Test:</h2>
-        <a href="/login" style={{ color: '#00ff00', marginRight: '20px' }}>→ Login</a>
-        <a href="/dashboard" style={{ color: '#00ff00', marginRight: '20px' }}>→ Dashboard</a>
-        <a href="/" style={{ color: '#00ff00' }}>→ Home</a>
+<Link href="/login" passHref><a style={{ color: '#00ff00', marginRight: '20px' }}>→ Login</a></Link>
+<Link href="/dashboard" passHref><a style={{ color: '#00ff00', marginRight: '20px' }}>→ Dashboard</a></Link>
+<Link href="/" passHref><a style={{ color: '#00ff00' }}>→ Home</a></Link>
       </div>
 
       <div style={{ marginTop: '40px' }}>
