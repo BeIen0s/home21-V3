@@ -15,10 +15,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false); // Commencer sans loading
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial session rapidement
+    // Check initial session
     const checkUser = async () => {
       try {
         const currentUser = await auth.getUser();
@@ -26,10 +26,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Error checking user:', error);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
-    // Exécution immédiate sans loading
     checkUser();
 
     // Listen for auth changes
