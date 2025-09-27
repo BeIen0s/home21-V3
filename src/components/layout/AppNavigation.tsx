@@ -161,7 +161,7 @@ export const AppNavigation: React.FC = () => {
   return (
     <nav>
       {/* Mobile menu button */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
+      <div className="md:hidden fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"

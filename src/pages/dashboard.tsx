@@ -118,30 +118,6 @@ const DashboardPage: React.FC = () => {
       showFooter={false}
     >
       <div className="min-h-screen bg-gray-50">
-        {/* En-tête de bienvenue */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Bonjour {user ? user.name : 'Invité'} !
-                </h1>
-                <p className="text-gray-600 mt-1">
-                  {user ? (
-                    <span>Rôle actuel: <span className="font-medium">{getRoleDisplayName()}</span></span>
-                  ) : (
-                    'Bienvenue sur le tableau de bord Home21'
-                  )}
-                </p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-                  <BarChart3 className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Contenu principal */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
