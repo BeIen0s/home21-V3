@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
-import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 import { 
   Menu, 
@@ -19,8 +18,10 @@ import {
   BarChart3,
   Shield,
   ChevronDown,
+  ChevronRight,
   Package
 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface NavigationItem {
   name: string;
@@ -158,16 +159,34 @@ export const AppNavigation: React.FC = () => {
   };
 
   return (
-    <nav className="bg-gray-800 shadow-lg border-b border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav>
+      {/* Mobile menu button */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+        </button>
+      </div>
+      
+      {/* Sidebar */}
+      <div className={cn(
+        "fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 shadow-lg transform transition-transform duration-200 ease-in-out md:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+        <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center px-6 py-6 border-b border-gray-700">
             <Link href={user ? '/dashboard' : '/'} className="flex items-center">
-              <div className="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Home className="h-6 w-6 text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-gray-100">
+              <span className="ml-3 text-xl font-bold text-white">
                 Home21
               </span>
             </Link>

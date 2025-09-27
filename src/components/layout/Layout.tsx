@@ -3,9 +3,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { Navbar } from './Navbar';
 import { AdminNav } from './AdminNav';
-import { AppNavigation } from './AppNavigation';
+import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/utils/cn';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -50,20 +51,27 @@ export const Layout: React.FC<LayoutProps> = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-gray-900 dark:bg-gray-900 flex flex-col">
-        {showNavbar && (
-          user && isAuthenticatedPage ? (
-            <AppNavigation />
-          ) : isPublicPage ? (
-            <Navbar />
-          ) : null
+      <div className="min-h-screen bg-gray-50 flex">
+        {/* Sidebar pour les pages authentifiées */}
+        {showNavbar && user && isAuthenticatedPage && (
+          <Sidebar />
         )}
         
-        <main className="flex-1">
-          {children}
-        </main>
+        {/* Navbar pour les pages publiques */}
+        {showNavbar && !user && isPublicPage && (
+          <Navbar />
+        )}
         
-        {showFooter && <Footer />}
+        {/* Contenu principal */}
+        <div className={cn(
+          "flex-1 flex flex-col",
+          user && isAuthenticatedPage ? "md:ml-64" : ""
+        )}>
+          <main className="flex-1">
+            {children}
+          </main>
+          {showFooter && <Footer />}
+        </div>
       </div>
     </>
   );
