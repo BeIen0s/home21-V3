@@ -50,19 +50,6 @@ export default function LoginPage() {
     if (error) setError('');
   };
 
-  // Comptes de test
-  const testAccounts = [
-    { email: 'sylvain@pass21.fr', password: 'admin123', role: 'Super Admin', name: 'Sylvain Pater' },
-    { email: 'admin@pass21.fr', password: 'admin123', role: 'Admin', name: 'Admin Pass21' },
-    { email: 'encadrant@pass21.fr', password: 'encadrant123', role: 'Encadrant', name: 'Marie Encadrant' },
-    { email: 'marie@pass21.fr', password: 'marie123', role: 'Résident', name: 'Marie Dupont' },
-    { email: 'test@pass21.fr', password: 'test123', role: 'Admin', name: 'Compte Test' }
-  ];
-
-  const fillTestAccount = (account: typeof testAccounts[0]) => {
-    setFormData({ email: account.email, password: account.password });
-    setError('');
-  };
 
   // Si en cours de chargement initial
   if (loading) {
@@ -192,47 +179,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Comptes de test */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="text-center mb-4">
-                <h3 className="text-sm font-semibold text-gray-900">Comptes de démonstration</h3>
-                <p className="text-xs text-gray-600 mt-1">Cliquez sur un compte pour vous connecter rapidement</p>
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                  {testAccounts.map((account, index) => {
-                    const roleColors = {
-                      'Super Admin': 'bg-red-50 border-red-200 text-red-800',
-                      'Admin': 'bg-purple-50 border-purple-200 text-purple-800', 
-                      'Encadrant': 'bg-green-50 border-green-200 text-green-800',
-                      'Résident': 'bg-blue-50 border-blue-200 text-blue-800'
-                    };
-                    return (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => fillTestAccount(account)}
-                        className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-gray-900 group-hover:text-blue-900">{account.name}</div>
-                            <div className="text-xs text-gray-600 group-hover:text-blue-700">{account.email}</div>
-                          </div>
-                          <span className={`text-xs px-3 py-1 rounded-full font-medium border ${roleColors[account.role as keyof typeof roleColors] || 'bg-gray-50 border-gray-200 text-gray-800'}`}>
-                            {account.role}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                })}
-              </div>
-              
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-600 text-center">
-                  📝 <strong>Astuce :</strong> Chaque rôle a des permissions différentes. Testez avec différents comptes !
-                </p>
-              </div>
-            </div>
           </div>
           
           {/* Footer discret */}
