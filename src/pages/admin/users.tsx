@@ -9,7 +9,7 @@ import { UserEditModal } from '@/components/admin/UserEditModal';
 import { ExtendedUser, UserRole, AccessLevel, TableColumn } from '@/types';
 import { mockExtendedUsers } from '@/data/mockUserManagement';
 import { StorageService } from '@/services/storageService';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { Resource } from '@/utils/permissions';
 
 // Helper functions
@@ -167,13 +167,7 @@ const UserManagementPage: React.FC = () => {
   };
 
   return (
-    <RoleProtectedRoute 
-      resource={Resource.USERS}
-      fallbackTitle="Accès restreint"
-      fallbackDescription="Vous n'avez pas les permissions nécessaires pour gérer les utilisateurs"
-      showNavbar={true}
-      showFooter={false}
-    >
+    <ProtectedPage requiredPage="/admin/users">
       <Layout
         title="Pass21 - Gestion des Utilisateurs"
         description="Gestion des utilisateurs et des permissions"
@@ -278,7 +272,7 @@ const UserManagementPage: React.FC = () => {
         <ConfirmDialog />
         </div>
       </Layout>
-    </RoleProtectedRoute>
+    </ProtectedPage>
   );
 };
 

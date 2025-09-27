@@ -244,11 +244,11 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                   required
                 >
                   {assignableRoles.map(role => {
-                    const roleLabels = {
-                      [UserRole.SUPER_ADMIN]: 'Super Administrateur',
-                      [UserRole.ADMIN]: 'Administrateur',
-                      [UserRole.ENCADRANT]: 'Encadrant',
-                      [UserRole.RESIDENT]: 'Résident'
+                    const roleLabels: Record<string, string> = {
+                      'SUPER_ADMIN': 'Super Administrateur',
+                      'ADMIN': 'Administrateur',
+                      'ENCADRANT': 'Encadrant',
+                      'RESIDENT': 'Résident'
                     };
                     return (
                       <option key={role} value={role}>

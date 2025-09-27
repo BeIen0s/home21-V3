@@ -6,7 +6,7 @@ import { Select } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { StatsCard } from '@/components/ui';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { Resource } from '@/utils/permissions';
 import { 
   Settings, 
@@ -73,13 +73,7 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <RoleProtectedRoute 
-      resource={Resource.SETTINGS}
-      fallbackTitle="Accès restreint"
-      fallbackDescription="Seuls les super administrateurs peuvent accéder aux paramètres système"
-      showNavbar={true}
-      showFooter={false}
-    >
+    <ProtectedPage requiredPage="/settings">
       <Layout
         title="Pass21 - Paramètres"
         description="Configuration et paramètres du système"
@@ -411,7 +405,7 @@ const SettingsPage: React.FC = () => {
         </main>
         </div>
       </Layout>
-    </RoleProtectedRoute>
+    </ProtectedPage>
   );
 };
 

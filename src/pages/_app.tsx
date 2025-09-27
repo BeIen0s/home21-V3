@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,33 +8,20 @@ import '@/styles/globals.css';
 
 const queryClient = new QueryClient();
 
-const publicRoutes = ['/login', '/'];
-
-// FLAG DE CONTRÔLE: Mettre à true pour désactiver complètement la protection
-const DISABLE_AUTH_PROTECTION = true;
+// Pages publiques (accessibles sans authentification)
+const publicRoutes = ['/login', '/', '/unauthorized'];
 
 function AppContent({ Component, pageProps, pathname }: { Component: any; pageProps: any; pathname: string }) {
-  // Debug: Log environment info
-  console.log('📝 Environment Info:', {
-    pathname,
-    NODE_ENV: process.env.NODE_ENV,
-    DISABLE_AUTH_PROTECTION,
-    timestamp: new Date().toISOString()
-  });
+  console.log('📝 App routing:', { pathname });
   
-  // Vérification explicite du flag de désactivation
-  if (DISABLE_AUTH_PROTECTION) {
-    console.log('🔓 Auth protection is DISABLED - All pages are accessible');
-    return <Component {...pageProps} />;
-  }
-
-  // Version avec protection (inactive quand DISABLE_AUTH_PROTECTION = true)
+  // Vérifier si c'est une route publique
   const isPublicRoute = publicRoutes.includes(pathname);
   
   if (isPublicRoute) {
     return <Component {...pageProps} />;
   }
   
+  // Pour les routes privées, utiliser ProtectedRoute
   return (
     <ProtectedRoute>
       <Component {...pageProps} />
@@ -53,6 +40,7 @@ export default function App({ Component, pageProps }: AppProps) {
           pageProps={pageProps} 
           pathname={router.pathname}
         />
+        {process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
       </AuthProvider>
     </QueryClientProvider>
   );

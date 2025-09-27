@@ -108,3 +108,5 @@ prisma/migrations/
 
 # Docker
 .dockerignore
+# Local Netlify folder
+.netlify

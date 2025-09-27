@@ -7,7 +7,7 @@ import { StatsCard, Badge } from '@/components/ui';
 import { Plus, Edit, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 import type { Resident, ResidentStatus, Gender, TableColumn } from '@/types';
 import { StorageService } from '@/services/storageService';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { Resource } from '@/utils/permissions';
 
 // Mock data pour les résidents
@@ -213,13 +213,7 @@ const ResidentsPage: React.FC = () => {
   ];
 
   return (
-    <RoleProtectedRoute 
-      resource={Resource.RESIDENTS}
-      fallbackTitle="Accès restreint"
-      fallbackDescription="Vous n'avez pas les permissions nécessaires pour gérer les résidents"
-      showNavbar={true}
-      showFooter={false}
-    >
+    <ProtectedPage requiredPage="/residents">
       <Layout
         title="Pass21 - Gestion des Résidents"
         description="Gestion des résidents de la résidence Pass21"
@@ -292,7 +286,7 @@ const ResidentsPage: React.FC = () => {
         </main>
         </div>
       </Layout>
-    </RoleProtectedRoute>
+    </ProtectedPage>
   );
 };
 

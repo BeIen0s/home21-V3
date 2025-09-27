@@ -20,7 +20,7 @@ import {
   Play
 } from 'lucide-react';
 import type { TableColumn } from '@/types';
-import RoleProtectedRoute from '@/components/auth/RoleProtectedRoute';
+import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { Resource } from '@/utils/permissions';
 
 // Task types
@@ -470,13 +470,7 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <RoleProtectedRoute 
-      resource={Resource.TASKS}
-      fallbackTitle="Accès restreint"
-      fallbackDescription="Vous n'avez pas les permissions nécessaires pour gérer les tâches"
-      showNavbar={true}
-      showFooter={false}
-    >
+    <ProtectedPage requiredPage="/tasks">
       <Layout
         title="Pass21 - Gestion des Tâches"
         description="Gestion et suivi des tâches de la résidence Pass21"
@@ -666,7 +660,7 @@ const TasksPage: React.FC = () => {
         </main>
         </div>
       </Layout>
-    </RoleProtectedRoute>
+    </ProtectedPage>
   );
 };
 

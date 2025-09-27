@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useLogout } from '@/hooks/useLogout';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 import { 
@@ -19,7 +18,8 @@ import {
   ClipboardList,
   BarChart3,
   Shield,
-  ChevronDown
+  ChevronDown,
+  Package
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -29,23 +29,27 @@ interface NavigationItem {
   description: string;
   requiresAuth: boolean;
   checkAccess: () => boolean;
+  children?: NavigationItem[];
 }
 
 export const AppNavigation: React.FC = () => {
   const router = useRouter();
-  const { user, isLoading } = useAuth();
-  const logout = useLogout();
+  const { user, loading, logout } = useAuth();
   const {
     canAccessUsersPage,
     canAccessSettingsPage,
     canAccessResidentsPage,
     canAccessHousesPage,
     canAccessTasksPage,
-    currentUserRole
+    canAccessServicesPage,
+    currentUserRole,
+    getRoleDisplayName,
+    getRoleBadgeColor
   } = usePermissions();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 
   // Configuration de la navigation basée sur les permissions
   const navigation: NavigationItem[] = [
@@ -58,36 +62,54 @@ export const AppNavigation: React.FC = () => {
       checkAccess: () => true // Accessible à tous les utilisateurs connectés
     },
     {
-      name: 'Résidents',
-      href: '/residents',
-      icon: UserCheck,
-      description: 'Gestion des résidents',
+      name: 'Administration',
+      href: '#',
+      icon: Shield,
+      description: 'Gestion administrative',
       requiresAuth: true,
-      checkAccess: canAccessResidentsPage
+      checkAccess: () => canAccessUsersPage() || canAccessHousesPage() || canAccessResidentsPage() || canAccessTasksPage(),
+      children: [
+        {
+          name: 'Utilisateurs',
+          href: '/admin/users',
+          icon: Users,
+          description: 'Gestion des utilisateurs',
+          requiresAuth: true,
+          checkAccess: canAccessUsersPage
+        },
+        {
+          name: 'Logements',
+          href: '/houses',
+          icon: Building,
+          description: 'Gestion des logements',
+          requiresAuth: true,
+          checkAccess: canAccessHousesPage
+        },
+        {
+          name: 'Résidents',
+          href: '/residents',
+          icon: UserCheck,
+          description: 'Gestion des résidents',
+          requiresAuth: true,
+          checkAccess: canAccessResidentsPage
+        },
+        {
+          name: 'Tâches',
+          href: '/tasks',
+          icon: ClipboardList,
+          description: 'Gestion des tâches',
+          requiresAuth: true,
+          checkAccess: canAccessTasksPage
+        }
+      ]
     },
     {
-      name: 'Logements',
-      href: '/houses',
-      icon: Building,
-      description: 'Gestion des logements',
+      name: 'Services',
+      href: '/services',
+      icon: Package,
+      description: 'Services Pass21',
       requiresAuth: true,
-      checkAccess: canAccessHousesPage
-    },
-    {
-      name: 'Tâches',
-      href: '/tasks',
-      icon: ClipboardList,
-      description: 'Gestion des tâches',
-      requiresAuth: true,
-      checkAccess: canAccessTasksPage
-    },
-    {
-      name: 'Utilisateurs',
-      href: '/admin/users',
-      icon: Users,
-      description: 'Gestion des utilisateurs',
-      requiresAuth: true,
-      checkAccess: canAccessUsersPage
+      checkAccess: canAccessServicesPage
     },
     {
       name: 'Paramètres',
@@ -103,33 +125,36 @@ export const AppNavigation: React.FC = () => {
   const visibleNavigation = navigation.filter(item => {
     if (!item.requiresAuth) return true;
     if (!user) return false;
+    
+    // Pour les items avec des enfants, vérifier qu'au moins un enfant est accessible
+    if (item.children) {
+      const visibleChildren = item.children.filter(child => {
+        if (!child.requiresAuth) return true;
+        return child.checkAccess();
+      });
+      return visibleChildren.length > 0;
+    }
+    
     return item.checkAccess();
+  }).map(item => {
+    // Filtrer les enfants visibles pour chaque item parent
+    if (item.children) {
+      return {
+        ...item,
+        children: item.children.filter(child => {
+          if (!child.requiresAuth) return true;
+          if (!user) return false;
+          return child.checkAccess();
+        })
+      };
+    }
+    return item;
   });
 
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
     setIsMobileMenuOpen(false);
-  };
-
-  const getRoleDisplayName = (role: string) => {
-    const roleNames = {
-      'SUPER_ADMIN': 'Super Administrateur',
-      'ADMIN': 'Administrateur',
-      'ENCADRANT': 'Encadrant',
-      'RESIDENT': 'Résident'
-    };
-    return roleNames[role as keyof typeof roleNames] || role;
-  };
-
-  const getRoleBadgeColor = (role: string) => {
-    const colors = {
-      'SUPER_ADMIN': 'bg-red-900 text-red-200',
-      'ADMIN': 'bg-purple-900 text-purple-200',
-      'ENCADRANT': 'bg-green-900 text-green-200',
-      'RESIDENT': 'bg-blue-900 text-blue-200'
-    };
-    return colors[role as keyof typeof colors] || 'bg-gray-800 text-gray-200';
   };
 
   return (
@@ -152,8 +177,65 @@ export const AppNavigation: React.FC = () => {
           <div className="hidden md:flex items-center space-x-1">
             {visibleNavigation.map((item) => {
               const Icon = item.icon;
-              const isActive = router.pathname === item.href || router.pathname.startsWith(item.href + '/');
+              const isActive = item.children 
+                ? item.children.some(child => router.pathname === child.href || router.pathname.startsWith(child.href + '/'))
+                : router.pathname === item.href || router.pathname.startsWith(item.href + '/');
               
+              // Si l'item a des enfants, rendre un dropdown
+              if (item.children && item.children.length > 0) {
+                return (
+                  <div key={item.name} className="relative">
+                    <button
+                      onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                      className={cn(
+                        'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                        isActive 
+                          ? 'bg-primary-900 text-primary-200 border border-primary-700' 
+                          : 'text-gray-300 hover:text-gray-100 hover:bg-gray-700'
+                      )}
+                    >
+                      <Icon className={cn('h-4 w-4 mr-2', isActive ? 'text-primary-300' : 'text-gray-400')} />
+                      {item.name}
+                      <ChevronDown className={cn(
+                        'h-4 w-4 ml-1 transition-transform',
+                        isAdminMenuOpen ? 'rotate-180' : ''
+                      )} />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {isAdminMenuOpen && (
+                      <div className="absolute left-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-lg border border-gray-600 py-1 z-50">
+                        {item.children.map((child) => {
+                          const ChildIcon = child.icon;
+                          const childIsActive = router.pathname === child.href || router.pathname.startsWith(child.href + '/');
+                          
+                          return (
+                            <Link
+                              key={child.name}
+                              href={child.href}
+                              className={cn(
+                                'flex items-center px-4 py-2 text-sm transition-colors',
+                                childIsActive
+                                  ? 'bg-primary-900 text-primary-200'
+                                  : 'text-gray-200 hover:bg-gray-700 hover:text-gray-100'
+                              )}
+                              onClick={() => setIsAdminMenuOpen(false)}
+                            >
+                              <ChildIcon className={cn('h-4 w-4 mr-3', childIsActive ? 'text-primary-300' : 'text-gray-400')} />
+                              <div>
+                                <div>{child.name}</div>
+                                <div className="text-xs text-gray-400">{child.description}</div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              
+              // Item normal sans enfants
               return (
                 <Link
                   key={item.name}
@@ -179,7 +261,7 @@ export const AppNavigation: React.FC = () => {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
-            {isLoading ? (
+            {loading ? (
               <div className="h-8 w-32 bg-gray-600 animate-pulse rounded"></div>
             ) : user ? (
               <div className="relative">
@@ -192,8 +274,8 @@ export const AppNavigation: React.FC = () => {
                   </div>
                   <div className="text-left">
                     <div className="text-sm font-medium text-gray-100">{user.name}</div>
-                    <div className={cn('text-xs px-2 py-0.5 rounded-full', getRoleBadgeColor(currentUserRole))}>
-                      {getRoleDisplayName(currentUserRole)}
+                    <div className={cn('text-xs px-2 py-0.5 rounded-full', getRoleBadgeColor())}>
+                      {getRoleDisplayName()}
                     </div>
                   </div>
                   <ChevronDown className="h-4 w-4" />
@@ -263,8 +345,8 @@ export const AppNavigation: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                    <div className={cn('text-xs px-2 py-0.5 rounded-full inline-block', getRoleBadgeColor(currentUserRole))}>
-                      {getRoleDisplayName(currentUserRole)}
+                    <div className={cn('text-xs px-2 py-0.5 rounded-full inline-block', getRoleBadgeColor())}>
+                      {getRoleDisplayName()}
                     </div>
                   </div>
                 </div>
@@ -273,8 +355,60 @@ export const AppNavigation: React.FC = () => {
 
             {visibleNavigation.map((item) => {
               const Icon = item.icon;
-              const isActive = router.pathname === item.href;
+              const isActive = item.children 
+                ? item.children.some(child => router.pathname === child.href || router.pathname.startsWith(child.href + '/'))
+                : router.pathname === item.href;
               
+              // Si l'item a des enfants, rendre les sous-items
+              if (item.children && item.children.length > 0) {
+                return (
+                  <div key={item.name} className="space-y-1">
+                    {/* Header du groupe */}
+                    <div className={cn(
+                      'flex items-center px-3 py-2 rounded-md text-base font-medium',
+                      isActive 
+                        ? 'bg-primary-50 text-primary-700 border-l-4 border-primary-600' 
+                        : 'text-gray-700 bg-gray-100'
+                    )}>
+                      <Icon className="h-5 w-5 mr-3" />
+                      <div>
+                        <div className="font-semibold">{item.name}</div>
+                        <div className="text-xs text-gray-500">{item.description}</div>
+                      </div>
+                    </div>
+                    
+                    {/* Sous-items */}
+                    <div className="ml-4 space-y-1">
+                      {item.children.map((child) => {
+                        const ChildIcon = child.icon;
+                        const childIsActive = router.pathname === child.href || router.pathname.startsWith(child.href + '/');
+                        
+                        return (
+                          <Link
+                            key={child.name}
+                            href={child.href}
+                            className={cn(
+                              'flex items-center px-3 py-2 rounded-md text-sm font-medium',
+                              childIsActive 
+                                ? 'bg-primary-100 text-primary-800 border-l-2 border-primary-600' 
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            )}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <ChildIcon className="h-4 w-4 mr-2" />
+                            <div>
+                              <div>{child.name}</div>
+                              <div className="text-xs text-gray-500">{child.description}</div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Item normal sans enfants
               return (
                 <Link
                   key={item.name}
@@ -331,11 +465,17 @@ export const AppNavigation: React.FC = () => {
         </div>
       </div>
 
-      {/* Click outside to close user menu */}
+      {/* Click outside to close menus */}
       {isUserMenuOpen && (
         <div
           className="fixed inset-0 z-40"
           onClick={() => setIsUserMenuOpen(false)}
+        />
+      )}
+      {isAdminMenuOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsAdminMenuOpen(false)}
         />
       )}
     </nav>
