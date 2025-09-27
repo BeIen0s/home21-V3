@@ -68,7 +68,7 @@ export default function LoginPage() {
   // Si déjà connecté (pendant la redirection)
   if (user) {
     return (
-      <Layout title="Connexion - Pass21" description="Redirection en cours">
+      <Layout title="Connexion - Home21" description="Redirection en cours">
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -81,8 +81,8 @@ export default function LoginPage() {
 
   return (
     <Layout
-      title="Connexion - Pass21"
-      description="Connectez-vous à votre compte Pass21"
+      title="Connexion - Home21"
+      description="Connectez-vous à votre compte Home21"
       showNavbar={false}
       showFooter={false}
     >
@@ -93,7 +93,7 @@ export default function LoginPage() {
             <div className="h-16 w-16 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg">
               <Home className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Pass21</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Home21</h1>
             <p className="text-gray-600">Connectez-vous à votre compte</p>
           </div>
 
@@ -184,7 +184,7 @@ export default function LoginPage() {
           {/* Footer discret */}
           <div className="text-center mt-8">
             <p className="text-xs text-gray-500">
-              Pass21 &copy; 2025 - Gestion de résidences accompagnées
+              Home21 &copy; 2025 - Gestion de résidences accompagnées
             </p>
           </div>
         </div>

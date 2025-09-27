@@ -17,7 +17,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({
   children,
-  title = 'Pass21 V3',
+  title = 'Home21 V3',
   description = 'Système de gestion résidentielle',
   showNavbar = true,
   showFooter = true,

@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
   if (loading) {
     return (
       <Layout
-        title="Pass21 - Chargement"
+        title="Home21 - Chargement"
         description="Redirection en cours"
         showNavbar={false}
         showFooter={false}
@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
   // Affichage pendant redirection (très bref)
   return (
     <Layout
-      title="Pass21 - Redirection"
+      title="Home21 - Redirection"
       description="Redirection en cours"
       showNavbar={false}
       showFooter={false}

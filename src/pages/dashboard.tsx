@@ -85,7 +85,7 @@ const DashboardPage: React.FC = () => {
       available: canAccessHousesPage()
     },
     {
-      title: 'Services Pass21',
+      title: 'Services Home21',
       description: 'Accéder aux services (courses, repas, transport)',
       href: '/services',
       icon: <Package className="w-6 h-6" />,
@@ -112,8 +112,8 @@ const DashboardPage: React.FC = () => {
 
   return (
     <Layout
-      title="Pass21 - Dashboard"
-      description="Tableau de bord principal Pass21"
+      title="Home21 - Dashboard"
+      description="Tableau de bord principal Home21"
       showNavbar={true}
       showFooter={false}
     >
@@ -130,7 +130,7 @@ const DashboardPage: React.FC = () => {
                   {user ? (
                     <span>Rôle actuel: <span className="font-medium">{getRoleDisplayName()}</span></span>
                   ) : (
-                    'Bienvenue sur le tableau de bord Pass21'
+                    'Bienvenue sur le tableau de bord Home21'
                   )}
                 </p>
               </div>

@@ -1,5 +1,5 @@
 /**
- * Service Supabase pour Pass21 - Production Ready
+ * Service Supabase pour Home21 - Production Ready
  * 
  * Remplace complètement les données mock par les vraies données Supabase
  */

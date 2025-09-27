@@ -107,7 +107,7 @@ export const AppNavigation: React.FC = () => {
       name: 'Services',
       href: '/services',
       icon: Package,
-      description: 'Services Pass21',
+      description: 'Services Home21',
       requiresAuth: true,
       checkAccess: canAccessServicesPage
     },
@@ -168,7 +168,7 @@ export const AppNavigation: React.FC = () => {
                 <Home className="h-6 w-6 text-white" />
               </div>
               <span className="ml-3 text-xl font-bold text-gray-100">
-                Pass21
+                Home21
               </span>
             </Link>
           </div>

@@ -1,5 +1,5 @@
 /**
- * Service API pour Pass21 - Version Production
+ * Service API pour Home21 - Version Production
  * 
  * Ce service centralise tous les appels API et gère automatiquement
  * le passage des données mock aux données réelles selon l'environnement.

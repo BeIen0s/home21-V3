@@ -1,7 +1,7 @@
 {
   "name": "home21-v3",
   "version": "0.1.0",
-  "description": "Home21 V3 - Modern SaaS Platform",
+  "description": "Home21 V3 - Modern SaaS Platform for Residential Management",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -73,7 +73,8 @@
     "next.js",
     "react",
     "typescript",
-    "home21"
+    "home21",
+    "residential-management"
   ],
   "author": "Your Name",
   "license": "MIT"
