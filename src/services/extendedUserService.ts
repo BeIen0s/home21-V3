@@ -15,17 +15,15 @@ type SupabaseUser = Database['public']['Tables']['users']['Row'];
 const convertToExtendedUser = (supaUser: SupabaseUser): ExtendedUser => ({
   id: supaUser.id,
   email: supaUser.email,
-  name: supaUser.name,
   // Extraire firstName et lastName depuis le nom complet
   firstName: supaUser.name.split(' ')[0] || '',
   lastName: supaUser.name.split(' ').slice(1).join(' ') || '',
   role: supaUser.role as UserRole,
   avatar: supaUser.avatar,
   phone: supaUser.phone,
-  address: supaUser.address,
-  bio: supaUser.bio,
   createdAt: new Date(supaUser.created_at),
   updatedAt: new Date(supaUser.updated_at),
+  bio: supaUser.bio ?? null,
   
   // Propriétés ExtendedUser (avec valeurs par défaut)
   roles: [], // TODO: Implémenter la récupération des rôles
@@ -41,13 +39,11 @@ const convertToExtendedUser = (supaUser: SupabaseUser): ExtendedUser => ({
  * Convertit un ExtendedUser en format Supabase pour insertion/mise à jour
  */
 const convertFromExtendedUser = (user: Partial<ExtendedUser>) => ({
-  ...(user.name && { name: user.name }),
   ...(user.firstName && user.lastName && { name: `${user.firstName} ${user.lastName}` }),
   ...(user.email && { email: user.email }),
   ...(user.role && { role: user.role }),
   ...(user.avatar && { avatar: user.avatar }),
   ...(user.phone && { phone: user.phone }),
-  ...(user.address && { address: user.address }),
   ...(user.bio && { bio: user.bio }),
   updated_at: new Date().toISOString(),
 });

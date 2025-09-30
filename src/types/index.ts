@@ -676,7 +676,8 @@ export interface ExtendedUser extends User {
   twoFactorEnabled: boolean;
   lastPasswordChange?: Date;
   failedLoginAttempts: number;
-  accountLockedUntil?: Date;
+  isActive: boolean;
+  bio: string | null;
 }
 
 export enum AccessLevel {

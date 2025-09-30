@@ -491,7 +491,8 @@ export const mockExtendedUsers: ExtendedUser[] = [
     canAccessAfterHours: true,
     twoFactorEnabled: true,
     failedLoginAttempts: 0,
-    lastPasswordChange: new Date('2024-01-01')
+    lastPasswordChange: new Date('2024-01-01'),
+    bio: 'Super admin user with full system access.'
   },
   {
     id: 'user_2',
@@ -514,7 +515,8 @@ export const mockExtendedUsers: ExtendedUser[] = [
     canAccessAfterHours: true,
     twoFactorEnabled: true,
     failedLoginAttempts: 0,
-    lastPasswordChange: new Date('2024-01-02')
+    lastPasswordChange: new Date('2024-01-02'),
+    bio: 'Admin user responsible for user and resident management.'
   },
   {
     id: 'user_4',
@@ -537,7 +539,8 @@ export const mockExtendedUsers: ExtendedUser[] = [
     canAccessAfterHours: true,
     twoFactorEnabled: false,
     failedLoginAttempts: 0,
-    lastPasswordChange: new Date('2024-01-05')
+    lastPasswordChange: new Date('2024-01-05'),
+    bio: 'Manager overseeing team and operations.'
   },
   {
     id: 'user_5',
@@ -560,7 +563,8 @@ export const mockExtendedUsers: ExtendedUser[] = [
     canAccessAfterHours: false,
     twoFactorEnabled: false,
     failedLoginAttempts: 0,
-    lastPasswordChange: new Date('2024-01-06')
+    lastPasswordChange: new Date('2024-01-06'),
+    bio: 'Nurse with access to medical information and care management.'
   },
   {
     id: 'user_6',
@@ -583,7 +587,8 @@ export const mockExtendedUsers: ExtendedUser[] = [
     canAccessAfterHours: false,
     twoFactorEnabled: false,
     failedLoginAttempts: 0,
-    lastPasswordChange: new Date('2024-01-08')
+    lastPasswordChange: new Date('2024-01-08'),
+    bio: 'Caregiver providing daily assistance to residents.'
   }
 ];
 
