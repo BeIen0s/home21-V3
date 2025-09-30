@@ -7,23 +7,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Validate environment variables
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Missing required environment variables:', {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
+    return res.status(500).json({ error: 'Configuration du serveur manquante' });
+  }
+
   try {
     // 1. Vérifier l'authentification
+    console.log('Starting sync operation...');
+    
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing authorization header');
       return res.status(401).json({ error: 'Token d\'authentification manquant' });
     }
 
     const token = authHeader.substring(7);
+    console.log('Validating user token...');
+    
     const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !currentUser) {
+      console.error('Auth validation failed:', authError?.message);
       return res.status(401).json({ error: 'Token d\'authentification invalide' });
     }
+    
+    console.log(`User authenticated: ${currentUser.email} (${currentUser.id})`);
 
     // 2. Vérifier les permissions admin
+    console.log('Checking admin permissions...');
     const hasAdminPermissions = await canUseAdminFunctions(currentUser.id);
+    console.log(`Admin permissions check result: ${hasAdminPermissions}`);
+    
     if (!hasAdminPermissions) {
+      console.error(`User ${currentUser.email} lacks admin permissions`);
       return res.status(403).json({ error: 'Permissions insuffisantes' });
     }
 
@@ -58,24 +79,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const name = authUser.user_metadata?.name || 
                       authUser.user_metadata?.full_name || 
                       authUser.email?.split('@')[0] || 'Utilisateur';
+          
+          // Split name into firstName and lastName for better schema compatibility
+          const nameParts = name.split(' ');
+          const firstName = nameParts[0] || 'Prénom';
+          const lastName = nameParts.slice(1).join(' ') || 'Nom';
                       
-          await supabaseAdmin
+          const { data: insertedUser, error: insertError } = await supabaseAdmin
             .from('users')
             .insert([{
               id: authUser.id,
-              name: name,
+              firstName: firstName,
+              lastName: lastName,
               email: authUser.email,
               role: 'RESIDENT', // Rôle par défaut
+              accessLevel: 'BASIC', // Niveau d'accès par défaut
               avatar: authUser.user_metadata?.avatar_url || null,
               phone: authUser.user_metadata?.phone || null,
-              address: null,
-              bio: null,
-            }]);
+              isActive: true,
+              canAccessAfterHours: false,
+              twoFactorEnabled: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }])
+            .select();
+          
+          if (insertError) {
+            throw new Error(`Insert error: ${insertError.message}`);
+          }
           
           synced++;
           console.log(`✅ Profil créé pour ${authUser.email} (${authUser.id})`);
         } catch (error) {
-          const errorMsg = `Erreur création profil pour ${authUser.email}: ${error}`;
+          const errorMsg = `Erreur création profil pour ${authUser.email}: ${error instanceof Error ? error.message : error}`;
           console.error(`❌ ${errorMsg}`);
           errors.push(errorMsg);
         }
@@ -92,6 +128,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('API /admin/users/sync error:', error);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    
+    // Provide more detailed error information in production
+    const errorMessage = error instanceof Error ? error.message : 'Erreur interne du serveur';
+    const errorStack = error instanceof Error ? error.stack : '';
+    
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
+    
+    res.status(500).json({ 
+      error: 'Erreur interne du serveur',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    });
   }
 }
