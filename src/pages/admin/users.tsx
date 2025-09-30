@@ -7,8 +7,7 @@ import { Plus, Eye, Edit, Shield, Users, UserCheck, UserX, Settings, Trash2, Tog
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { UserEditModal } from '@/components/admin/UserEditModal';
 import { ExtendedUser, UserRole, AccessLevel, TableColumn } from '@/types';
-import { mockExtendedUsers } from '@/data/mockUserManagement';
-import { StorageService } from '@/services/storageService';
+import { ExtendedUserService } from '@/services/extendedUserService';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { Resource } from '@/utils/permissions';
 
@@ -28,19 +27,27 @@ const UserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<ExtendedUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  // Charger les utilisateurs depuis le stockage local au chargement
+  // Charger les utilisateurs depuis Supabase
   useEffect(() => {
-    StorageService.initializeDefaultData();
-    const storedUsers = StorageService.getUsers();
-    if (storedUsers.length > 0) {
-      setUsers(storedUsers);
-    } else {
-      // Si pas d'utilisateurs stockés, utiliser les données mock par défaut
-      setUsers(mockExtendedUsers);
-      StorageService.saveUsers(mockExtendedUsers);
-    }
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const usersData = await ExtendedUserService.getAll();
+        setUsers(usersData);
+      } catch (err) {
+        console.error('Erreur lors du chargement des utilisateurs:', err);
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsers();
   }, []);
 
   // Define table columns
@@ -101,12 +108,16 @@ const UserManagementPage: React.FC = () => {
       message: `Êtes-vous sûr de vouloir ${action} l'utilisateur ${user.firstName} ${user.lastName} ?`,
       variant: user.isActive ? 'warning' : 'info',
       confirmText: action.charAt(0).toUpperCase() + action.slice(1),
-      onConfirm: () => {
-        const updatedUser = { ...user, isActive: !user.isActive, updatedAt: new Date() };
-        StorageService.updateUser(user.id, updatedUser);
-        setUsers(prev => prev.map(u => 
-          u.id === user.id ? updatedUser : u
-        ));
+      onConfirm: async () => {
+        try {
+          const updatedUser = await ExtendedUserService.toggleActive(user.id, !user.isActive);
+          setUsers(prev => prev.map(u => 
+            u.id === user.id ? updatedUser : u
+          ));
+        } catch (err) {
+          console.error('Erreur lors du changement de statut:', err);
+          setError(err instanceof Error ? err.message : 'Erreur lors du changement de statut');
+        }
       }
     });
   };
@@ -117,44 +128,45 @@ const UserManagementPage: React.FC = () => {
       message: `Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.firstName} ${user.lastName} ? Cette action est irréversible.`,
       variant: 'danger',
       confirmText: 'Supprimer',
-      onConfirm: () => {
-        StorageService.deleteUser(user.id);
-        setUsers(prev => prev.filter(u => u.id !== user.id));
+      onConfirm: async () => {
+        try {
+          await ExtendedUserService.delete(user.id);
+          setUsers(prev => prev.filter(u => u.id !== user.id));
+        } catch (err) {
+          console.error('Erreur lors de la suppression:', err);
+          setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');
+        }
       }
     });
   };
 
-  const handleSaveUser = (userData: Partial<ExtendedUser>) => {
-    if (selectedUser) {
-      // Update existing user
-      const updatedUser = { ...selectedUser, ...userData, updatedAt: new Date() };
-      StorageService.updateUser(selectedUser.id, updatedUser);
-      setUsers(prev => prev.map(u => 
-        u.id === selectedUser.id ? updatedUser : u
-      ));
-    } else {
-      // Create new user
-      const newUser: ExtendedUser = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        email: userData.email!,
-        firstName: userData.firstName!,
-        lastName: userData.lastName!,
-        role: userData.role || UserRole.RESIDENT,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        roles: userData.roles || [],
-        permissions: userData.permissions || [],
-        accessLevel: userData.accessLevel || AccessLevel.BASIC,
-        canAccessAfterHours: userData.canAccessAfterHours || false,
-        twoFactorEnabled: userData.twoFactorEnabled || false,
-        failedLoginAttempts: 0,
-        ...userData
-      };
-      StorageService.addUser(newUser);
-      setUsers(prev => [...prev, newUser]);
+  const handleSaveUser = async (userData: Partial<ExtendedUser>) => {
+    try {
+      if (selectedUser) {
+        // Update existing user
+        const updatedUser = await ExtendedUserService.update(selectedUser.id, userData);
+        setUsers(prev => prev.map(u => 
+          u.id === selectedUser.id ? updatedUser : u
+        ));
+      } else {
+        // Create new user
+        const newUser = await ExtendedUserService.create({
+          email: userData.email!,
+          firstName: userData.firstName!,
+          lastName: userData.lastName!,
+          role: userData.role || UserRole.RESIDENT,
+          accessLevel: userData.accessLevel || AccessLevel.BASIC,
+          canAccessAfterHours: userData.canAccessAfterHours || false,
+          twoFactorEnabled: userData.twoFactorEnabled || false,
+          ...userData
+        });
+        setUsers(prev => [...prev, newUser]);
+      }
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
     }
-    setIsEditModalOpen(false);
   };
 
   // Calculer les statistiques
@@ -198,7 +210,42 @@ const UserManagementPage: React.FC = () => {
 
         {/* Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Statistics Cards */}
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Erreur</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{error}</p>
+                  </div>
+                  <div className="mt-3">
+                    <button
+                      onClick={() => setError(null)}
+                      className="text-sm font-medium text-red-800 hover:text-red-600"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Chargement des utilisateurs...</span>
+            </div>
+          ) : (
+            <>
+              {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <StatsCard
               title="Total Utilisateurs"
@@ -235,27 +282,29 @@ const UserManagementPage: React.FC = () => {
               color="yellow"
             />
           </div>
-          <DataTable
-            data={users}
-            columns={columns}
-            actions={[
-              {
-                label: 'Modifier',
-                onClick: handleEditUser,
-                variant: 'secondary'
-              },
-              {
-                label: 'Basculer',
-                onClick: handleToggleUserStatus,
-                variant: 'secondary'
-              },
-              {
-                label: 'Supprimer',
-                onClick: handleDeleteUser,
-                variant: 'outline'
-              }
-            ]}
-          />
+            <DataTable
+              data={users}
+              columns={columns}
+              actions={[
+                {
+                  label: 'Modifier',
+                  onClick: handleEditUser,
+                  variant: 'secondary'
+                },
+                {
+                  label: 'Basculer',
+                  onClick: handleToggleUserStatus,
+                  variant: 'secondary'
+                },
+                {
+                  label: 'Supprimer',
+                  onClick: handleDeleteUser,
+                  variant: 'outline'
+                }
+              ]}
+            />
+            </>
+          )}
         </main>
 
         {/* Edit Modal */}
