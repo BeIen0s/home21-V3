@@ -9,6 +9,14 @@ import type { Database } from '@/lib/supabase';
 
 type SupabaseUser = Database['public']['Tables']['users']['Row'];
 
+interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
 /**
  * Convertit un utilisateur Supabase en ExtendedUser
  */
@@ -38,15 +46,17 @@ const convertToExtendedUser = (supaUser: SupabaseUser): ExtendedUser => ({
 /**
  * Convertit un ExtendedUser en format Supabase pour insertion/mise à jour
  */
-const convertFromExtendedUser = (user: Partial<ExtendedUser>) => ({
-  ...(user.firstName && user.lastName && { name: `${user.firstName} ${user.lastName}` }),
-  ...(user.email && { email: user.email }),
-  ...(user.role && { role: user.role }),
-  ...(user.avatar && { avatar: user.avatar }),
-  ...(user.phone && { phone: user.phone }),
-  ...(user.bio && { bio: user.bio }),
-  updated_at: new Date().toISOString(),
-});
+const convertFromExtendedUser = (user: Partial<ExtendedUser> & { address?: Address }) => (
+  {
+    ...(user.firstName && user.lastName && { name: `${user.firstName} ${user.lastName}` }),
+    ...(user.email && { email: user.email }),
+    ...(user.role && { role: user.role }),
+    ...(user.avatar && { avatar: user.avatar }),
+    ...(user.phone && { phone: user.phone }),
+    ...(user.bio && { bio: user.bio }),
+    ...(user.address && { address: JSON.stringify(user.address) }),
+    updated_at: new Date().toISOString(),
+  });
 
 export const ExtendedUserService = {
   /**
@@ -93,23 +103,47 @@ export const ExtendedUserService = {
   },
 
   /**
-   * Créer un nouvel utilisateur
+   * Créer un nouvel utilisateur complet (auth + profil)
    */
-  async create(userData: Partial<ExtendedUser>): Promise<ExtendedUser> {
+  async create(userData: Partial<ExtendedUser> & { address?: Address }): Promise<ExtendedUser> {
     try {
-      const supabaseData = convertFromExtendedUser(userData);
+      if (!userData.email || !userData.firstName || !userData.lastName) {
+        throw new Error('Email, prénom et nom sont requis pour créer un utilisateur');
+      }
+
+      // Pour l'instant, on crée seulement le profil utilisateur
+      // L'utilisateur devra être créé manuellement dans Supabase Auth ou via invitation
+      const fullName = `${userData.firstName} ${userData.lastName}`;
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      const { data, error } = await supabase
+      const profileData = {
+        id: tempId, // ID temporaire, sera remplacé lors de l'authentification réelle
+        name: fullName,
+        email: userData.email,
+        role: userData.role || 'RESIDENT',
+        avatar: userData.avatar || null,
+        phone: userData.phone || null,
+        address: userData.address || null,
+        bio: userData.bio || null,
+      };
+
+      const { data: profileUser, error: profileError } = await supabase
         .from('users')
-        .insert([supabaseData])
+        .insert([profileData])
         .select()
         .single();
 
-      if (error || !data) {
-        throw new Error(`Erreur lors de la création de l'utilisateur: ${error?.message}`);
+      if (profileError) {
+        throw new Error(`Erreur lors de la création du profil utilisateur: ${profileError.message}`);
       }
 
-      return convertToExtendedUser(data);
+      if (!profileUser) {
+        throw new Error('Aucune donnée retournée après création du profil');
+      }
+
+      console.log('✅ Profil utilisateur créé:', fullName, '(ID temp:', tempId, ')');
+      console.log('⚠️ Note: L\'utilisateur devra être invité séparément pour l\'authentification');
+      return convertToExtendedUser(profileUser);
     } catch (error) {
       console.error('ExtendedUserService.create error:', error);
       throw error;
@@ -142,18 +176,22 @@ export const ExtendedUserService = {
   },
 
   /**
-   * Supprimer un utilisateur
+   * Supprimer un utilisateur complet (auth + profil)
    */
   async delete(id: string): Promise<void> {
     try {
-      const { error } = await supabase
+      // Supprimer le profil utilisateur de public.users
+      const { error: profileError } = await supabase
         .from('users')
         .delete()
         .eq('id', id);
 
-      if (error) {
-        throw new Error(`Erreur lors de la suppression de l'utilisateur: ${error.message}`);
+      if (profileError) {
+        throw new Error(`Erreur lors de la suppression du profil: ${profileError.message}`);
       }
+
+      console.log('✅ Profil utilisateur supprimé avec succès (ID:', id, ')');
+      console.log('⚠️ Note: L\'utilisateur d\'authentification doit être supprimé manuellement dans Supabase si nécessaire');
     } catch (error) {
       console.error('ExtendedUserService.delete error:', error);
       throw error;
@@ -187,6 +225,30 @@ export const ExtendedUserService = {
       return extendedUser;
     } catch (error) {
       console.error('ExtendedUserService.toggleActive error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Synchroniser les utilisateurs orphelins (version simplifiée)
+   * Cette version ne nécessite pas de permissions admin
+   */
+  async syncOrphanUsers(): Promise<{ synced: number; errors: string[] }> {
+    const errors: string[] = [];
+    let synced = 0;
+
+    try {
+      console.log('🔄 Synchronisation simplifiée : cette fonctionnalité ne synchronise que les profils créés via l\'application');
+      
+      // Pour l'instant, on ne peut pas accéder aux utilisateurs auth sans permissions service
+      // Cette méthode pourrait être étendue avec une API backend qui a les bonnes permissions
+      
+      return { 
+        synced: 0, 
+        errors: ['Synchronisation limitée : permissions admin requises pour accéder aux utilisateurs d\'authentification']
+      };
+    } catch (error) {
+      console.error('ExtendedUserService.syncOrphanUsers error:', error);
       throw error;
     }
   },

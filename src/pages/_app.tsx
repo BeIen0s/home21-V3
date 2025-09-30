@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider, ProtectedRoute } from '@/hooks/useAuth';
+import { ToastProvider } from '@/components/ui/ToastProvider';
 import '@/styles/globals.css';
 
 const queryClient = new QueryClient();
@@ -35,12 +36,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent 
-          Component={Component} 
-          pageProps={pageProps} 
-          pathname={router.pathname}
-        />
-        {process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
+        <ToastProvider>
+          <AppContent 
+            Component={Component} 
+            pageProps={pageProps} 
+            pathname={router.pathname}
+          />
+          {process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

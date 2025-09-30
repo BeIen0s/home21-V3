@@ -8,8 +8,10 @@ import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { UserEditModal } from '@/components/admin/UserEditModal';
 import { ExtendedUser, UserRole, AccessLevel, TableColumn } from '@/types';
 import { ExtendedUserService } from '@/services/extendedUserService';
+import { AdminUserService } from '@/services/adminUserService';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
 import { Resource } from '@/utils/permissions';
+import { useToastActions } from '@/components/ui/Toast';
 
 // Helper functions
 const getRoleColor = (role: UserRole) => {
@@ -29,25 +31,38 @@ const UserManagementPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasAdminPermissions, setHasAdminPermissions] = useState(false);
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { showSuccess, showError, showWarning, showInfo } = useToastActions();
 
-  // Charger les utilisateurs depuis Supabase
+  // Charger les utilisateurs et vérifier les permissions
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const usersData = await ExtendedUserService.getAll();
+        
+        // Vérifier les permissions admin en parallèle
+        const [usersData, adminPerms] = await Promise.all([
+          ExtendedUserService.getAll(),
+          AdminUserService.hasAdminPermissions()
+        ]);
+        
         setUsers(usersData);
+        setHasAdminPermissions(adminPerms);
+        
+        if (adminPerms) {
+          console.log('✅ Permissions administrateur détectées');
+        }
       } catch (err) {
-        console.error('Erreur lors du chargement des utilisateurs:', err);
+        console.error('Erreur lors du chargement:', err);
         setError(err instanceof Error ? err.message : 'Erreur inconnue');
       } finally {
         setLoading(false);
       }
     };
 
-    loadUsers();
+    loadData();
   }, []);
 
   // Define table columns
@@ -95,10 +110,61 @@ const UserManagementPage: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-
   const handleEditUser = (user: ExtendedUser) => {
     setSelectedUser(user);
     setIsEditModalOpen(true);
+  };
+
+  const handleSyncUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      let result;
+      
+      if (hasAdminPermissions) {
+        // Utiliser le service admin avec permissions complètes
+        result = await AdminUserService.syncOrphanUsers();
+      } else {
+        // Fallback sur le service limité
+        result = await ExtendedUserService.syncOrphanUsers();
+      }
+      
+      if (result.synced > 0) {
+        // Recharger la liste des utilisateurs
+        const updatedUsers = await ExtendedUserService.getAll();
+        setUsers(updatedUsers);
+        
+        showSuccess(
+          'Synchronisation réussie',
+          `${result.synced} utilisateur(s) synchronisé(s) ${hasAdminPermissions ? 'avec permissions admin' : ''}`
+        );
+      } else {
+        if (!hasAdminPermissions) {
+          showWarning(
+            'Synchronisation limitée',
+            'Connectez-vous en tant qu\'administrateur pour la synchronisation complète'
+          );
+        } else {
+          showInfo(
+            'Synchronisation complète',
+            'Aucun utilisateur orphelin à synchroniser'
+          );
+        }
+      }
+      
+      if (result.errors && result.errors.length > 0) {
+        console.warn('⚠️ Erreurs:', result.errors);
+      }
+    } catch (err) {
+      console.error('Erreur lors de la synchronisation:', err);
+      showError(
+        'Erreur de synchronisation',
+        err instanceof Error ? err.message : 'Erreur lors de la synchronisation'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleToggleUserStatus = (user: ExtendedUser) => {
@@ -114,9 +180,16 @@ const UserManagementPage: React.FC = () => {
           setUsers(prev => prev.map(u => 
             u.id === user.id ? updatedUser : u
           ));
+          showSuccess(
+            `Utilisateur ${updatedUser.isActive ? 'activé' : 'désactivé'}`,
+            `${user.firstName} ${user.lastName} a été ${updatedUser.isActive ? 'activé' : 'désactivé'} avec succès`
+          );
         } catch (err) {
           console.error('Erreur lors du changement de statut:', err);
-          setError(err instanceof Error ? err.message : 'Erreur lors du changement de statut');
+          showError(
+            'Erreur de changement de statut',
+            err instanceof Error ? err.message : 'Erreur lors du changement de statut'
+          );
         }
       }
     });
@@ -132,9 +205,16 @@ const UserManagementPage: React.FC = () => {
         try {
           await ExtendedUserService.delete(user.id);
           setUsers(prev => prev.filter(u => u.id !== user.id));
+          showSuccess(
+            'Utilisateur supprimé',
+            `${user.firstName} ${user.lastName} a été supprimé avec succès`
+          );
         } catch (err) {
           console.error('Erreur lors de la suppression:', err);
-          setError(err instanceof Error ? err.message : 'Erreur lors de la suppression');
+          showError(
+            'Erreur de suppression',
+            err instanceof Error ? err.message : 'Erreur lors de la suppression'
+          );
         }
       }
     });
@@ -143,29 +223,66 @@ const UserManagementPage: React.FC = () => {
   const handleSaveUser = async (userData: Partial<ExtendedUser>) => {
     try {
       if (selectedUser) {
-        // Update existing user
+        // Update existing user - utiliser le service standard pour la modification
         const updatedUser = await ExtendedUserService.update(selectedUser.id, userData);
         setUsers(prev => prev.map(u => 
           u.id === selectedUser.id ? updatedUser : u
         ));
+        showSuccess(
+          'Utilisateur modifié',
+          `${updatedUser.firstName} ${updatedUser.lastName} a été modifié avec succès`
+        );
       } else {
-        // Create new user
-        const newUser = await ExtendedUserService.create({
-          email: userData.email!,
-          firstName: userData.firstName!,
-          lastName: userData.lastName!,
-          role: userData.role || UserRole.RESIDENT,
-          accessLevel: userData.accessLevel || AccessLevel.BASIC,
-          canAccessAfterHours: userData.canAccessAfterHours || false,
-          twoFactorEnabled: userData.twoFactorEnabled || false,
-          ...userData
-        });
+        // Create new user - utiliser le service admin si disponible
+        let newUser: ExtendedUser;
+        let tempPassword: string | undefined;
+        
+        if (hasAdminPermissions) {
+          const result = await AdminUserService.create({
+            email: userData.email!,
+            firstName: userData.firstName!,
+            lastName: userData.lastName!,
+            role: userData.role || UserRole.RESIDENT,
+            phone: userData.phone,
+            avatar: userData.avatar,
+          });
+          newUser = result.user;
+          tempPassword = result.tempPassword;
+        } else {
+          newUser = await ExtendedUserService.create({
+            email: userData.email!,
+            firstName: userData.firstName!,
+            lastName: userData.lastName!,
+            role: userData.role || UserRole.RESIDENT,
+            accessLevel: userData.accessLevel || AccessLevel.BASIC,
+            canAccessAfterHours: userData.canAccessAfterHours || false,
+            twoFactorEnabled: userData.twoFactorEnabled || false,
+            ...userData
+          });
+        }
+        
         setUsers(prev => [...prev, newUser]);
+        
+        const successMessage = hasAdminPermissions 
+          ? `Utilisateur complet créé avec authentification${tempPassword ? ' (mot de passe temporaire généré)' : ''}`
+          : 'Profil utilisateur créé (authentification à configurer séparément)';
+          
+        showSuccess(
+          'Utilisateur créé',
+          `${newUser.firstName} ${newUser.lastName} - ${successMessage}`
+        );
+        
+        if (tempPassword) {
+          console.log(`🔑 Mot de passe temporaire pour ${newUser.email}:`, tempPassword);
+        }
       }
       setIsEditModalOpen(false);
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
-      setError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde');
+      showError(
+        'Erreur de sauvegarde',
+        err instanceof Error ? err.message : 'Erreur lors de la sauvegarde'
+      );
     }
   };
 
@@ -197,13 +314,25 @@ const UserManagementPage: React.FC = () => {
                   Gérer les utilisateurs, rôles et permissions du système
                 </p>
               </div>
-              <Button
-                onClick={handleCreateUser}
-                className="inline-flex items-center"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvel Utilisateur
-              </Button>
+              <div className="flex space-x-3">
+                <Button
+                  onClick={handleSyncUsers}
+                  variant="outline"
+                  className="inline-flex items-center"
+                >
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Synchroniser
+                </Button>
+                <Button
+                  onClick={handleCreateUser}
+                  className="inline-flex items-center"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvel Utilisateur
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -236,6 +365,75 @@ const UserManagementPage: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Status & Info Panel */}
+          <div className="mb-6 space-y-4">
+            {/* Permissions Status */}
+            <div className={`rounded-md p-4 ${
+              hasAdminPermissions 
+                ? 'bg-green-50 border border-green-200' 
+                : 'bg-yellow-50 border border-yellow-200'
+            }`}>
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  {hasAdminPermissions ? (
+                    <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="ml-3">
+                  <h3 className={`text-sm font-medium ${
+                    hasAdminPermissions ? 'text-green-800' : 'text-yellow-800'
+                  }`}>
+                    {hasAdminPermissions ? 'Mode Administrateur Activé' : 'Mode Limité'}
+                  </h3>
+                  <div className={`mt-1 text-sm ${
+                    hasAdminPermissions ? 'text-green-700' : 'text-yellow-700'
+                  }`}>
+                    {hasAdminPermissions ? (
+                      <p>✓ Vous avez accès aux fonctionnalités administrateur complètes</p>
+                    ) : (
+                      <p>⚠ Fonctionnalités limitées - Connectez-vous en tant qu'administrateur pour plus d'options</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Panel */}
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">Fonctionnalités</h3>
+                  <div className="mt-2 text-sm text-blue-700 space-y-1">
+                    {hasAdminPermissions ? (
+                      <>
+                        <p>• ✅ <strong>Création complète</strong> : Utilisateurs avec authentification</p>
+                        <p>• ✅ <strong>Synchronisation totale</strong> : Accès aux utilisateurs Supabase</p>
+                        <p>• ✅ <strong>Suppression complète</strong> : Auth + Profil</p>
+                      </>
+                    ) : (
+                      <>
+                        <p>• 🟡 <strong>Création limitée</strong> : Profils uniquement</p>
+                        <p>• 🟡 <strong>Synchronisation partielle</strong> : Limitations d'accès</p>
+                        <p>• 🟡 <strong>Suppression partielle</strong> : Profils seulement</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Loading State */}
           {loading ? (

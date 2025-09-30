@@ -72,19 +72,51 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     }
   }, [user]);
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validation des champs requis
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'Le prénom est requis';
+    }
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Le nom est requis';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'L\'email est requis';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Format d\'email invalide';
+    }
+    
+    // Validation du téléphone (optionnel mais format vérifié)
+    if (formData.phone && !/^[+]?[0-9\s.-]{10,}$/.test(formData.phone)) {
+      newErrors.phone = 'Format de téléphone invalide';
+    }
+    
+    // Validation du mot de passe
+    if (canSetPassword && formData.password) {
+      if (formData.password.length < 8) {
+        newErrors.password = 'Le mot de passe doit contenir au moins 8 caractères';
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+        newErrors.password = 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre';
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation du mot de passe si les champs sont remplis
-    if (canSetPassword && formData.password) {
-      if (formData.password !== formData.confirmPassword) {
-        alert('Les mots de passe ne correspondent pas');
-        return;
-      }
-      if (formData.password.length < 6) {
-        alert('Le mot de passe doit contenir au moins 6 caractères');
-        return;
-      }
+    if (!validateForm()) {
+      return;
     }
     
     // Pour les nouveaux utilisateurs, vérifier qu'un mot de passe est fourni (optionnel)
@@ -138,37 +170,78 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
               <h3 className="text-lg font-medium text-gray-900">Informations personnelles</h3>
               
               <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Prénom"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                  required
-                />
+                <div>
+                  <Input
+                    label="Prénom"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, firstName: e.target.value }));
+                      if (errors.firstName) {
+                        setErrors(prev => ({ ...prev, firstName: '' }));
+                      }
+                    }}
+                    required
+                  />
+                  {errors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                  )}
+                </div>
                 
-                <Input
-                  label="Nom"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                  required
-                />
+                <div>
+                  <Input
+                    label="Nom"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, lastName: e.target.value }));
+                      if (errors.lastName) {
+                        setErrors(prev => ({ ...prev, lastName: '' }));
+                      }
+                    }}
+                    required
+                  />
+                  {errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                  )}
+                </div>
               </div>
 
-              <Input
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                required
-              />
+              <div>
+                <Input
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, email: e.target.value }));
+                    if (errors.email) {
+                      setErrors(prev => ({ ...prev, email: '' }));
+                    }
+                  }}
+                  required
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
+              </div>
 
-              <Input
-                label="Téléphone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-              />
+              <div>
+                <Input
+                  label="Téléphone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, phone: e.target.value }));
+                    if (errors.phone) {
+                      setErrors(prev => ({ ...prev, phone: '' }));
+                    }
+                  }}
+                  placeholder="+33 1 23 45 67 89"
+                />
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                )}
+              </div>
               
               {/* Debug info - à supprimer plus tard */}
               {process.env.NODE_ENV === 'development' && (
@@ -182,38 +255,58 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
               {/* Champs mot de passe pour admin/super admin */}
               {canSetPassword && (
                 <>
-                  <div className="relative">
-                    <Input
-                      label="Mot de passe"
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder={user ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Définir le mot de passe initial'}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                  <div>
+                    <div className="relative">
+                      <Input
+                        label="Mot de passe"
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, password: e.target.value }));
+                          if (errors.password) {
+                            setErrors(prev => ({ ...prev, password: '' }));
+                          }
+                        }}
+                        placeholder={user ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Définir le mot de passe initial'}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                    )}
                   </div>
                   
-                  <div className="relative">
-                    <Input
-                      label="Confirmer le mot de passe"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      placeholder="Confirmer le mot de passe"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                  <div>
+                    <div className="relative">
+                      <Input
+                        label="Confirmer le mot de passe"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={formData.confirmPassword}
+                        onChange={(e) => {
+                          setFormData(prev => ({ ...prev, confirmPassword: e.target.value }));
+                          if (errors.confirmPassword) {
+                            setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                          }
+                        }}
+                        placeholder="Confirmer le mot de passe"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                    )}
                   </div>
                   
                   <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
