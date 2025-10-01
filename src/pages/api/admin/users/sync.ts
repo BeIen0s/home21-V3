@@ -89,18 +89,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             .from('users')
             .insert([{
               id: authUser.id,
-              firstName: firstName,
-              lastName: lastName,
+              name: name, // Utiliser le champ name du schéma
               email: authUser.email,
               role: 'RESIDENT', // Rôle par défaut
-              accessLevel: 'BASIC', // Niveau d'accès par défaut
               avatar: authUser.user_metadata?.avatar_url || null,
               phone: authUser.user_metadata?.phone || null,
-              isActive: true,
-              canAccessAfterHours: false,
-              twoFactorEnabled: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
+              address: null,
+              birth_date: null,
+              bio: null
             }])
             .select();
           

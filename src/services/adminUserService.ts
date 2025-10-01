@@ -30,8 +30,15 @@ const apiRequest = async (url: string, options: RequestInit = {}) => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
-    throw new Error(errorData.error || `HTTP Error: ${response.status}`);
+    let errorMessage = `HTTP Error: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (parseError) {
+      console.warn('Failed to parse error response:', parseError);
+      errorMessage = `HTTP Error: ${response.status} - ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();

@@ -8,13 +8,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('=== Starting user creation ===');
+    console.log('Request body:', req.body);
+    
     // 1. Vérifier l'authentification de l'utilisateur actuel
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing authorization header');
       return res.status(401).json({ error: 'Token d\'authentification manquant' });
     }
 
     const token = authHeader.substring(7);
+    console.log('Token validation...');
     
     // Vérifier le token avec le client standard (pas admin)
     const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser(token);
@@ -89,7 +94,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    console.error('API /admin/users/create error:', error);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('=== API /admin/users/create error ===');
+    console.error('Error details:', error);
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    
+    const errorMessage = error instanceof Error ? error.message : 'Erreur interne du serveur';
+    res.status(500).json({ error: errorMessage });
   }
 }
