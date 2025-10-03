@@ -4,10 +4,12 @@ import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
 import { StatsCard, Badge } from '@/components/ui';
-import { Plus, Edit, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Users, UserCheck, Clock, TrendingUp } from 'lucide-react';
 import type { Resident, ResidentStatus, Gender, TableColumn } from '@/types';
 import { StorageService } from '@/services/storageService';
+import { ResidentsService } from '@/services/residents.service';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Resource } from '@/utils/permissions';
 
 // Mock data pour les résidents
@@ -138,6 +140,7 @@ const calculateAge = (dateOfBirth: Date) => {
 const ResidentsPage: React.FC = () => {
   const router = useRouter();
   const [residents, setResidents] = useState<(Resident & { houseName?: string })[]>(mockResidents);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   
   // Charger les résidents depuis le stockage local
   useEffect(() => {
@@ -200,15 +203,59 @@ const ResidentsPage: React.FC = () => {
     }
   ];
 
+  const handleViewResident = (resident: typeof mockResidents[0]) => {
+    router.push(`/residents/${resident.id}`);
+  };
+
   const handleEditResident = (resident: typeof mockResidents[0]) => {
     router.push(`/residents/edit/${resident.id}`);
   };
 
+  const handleDeleteResident = (resident: typeof mockResidents[0]) => {
+    const warningMessage = resident.status === 'ACTIVE' && resident.houseId
+      ? `Êtes-vous sûr de vouloir supprimer le résident ${resident.firstName} ${resident.lastName} ? Cette action est irréversible. Le résident est actuellement logé en ${resident.houseName || resident.houseId}.`
+      : `Êtes-vous sûr de vouloir supprimer le résident ${resident.firstName} ${resident.lastName} ? Cette action est irréversible.`;
+
+    confirm({
+      title: 'Supprimer le résident',
+      message: warningMessage,
+      variant: 'danger',
+      confirmText: 'Supprimer',
+      onConfirm: async () => {
+        try {
+          // For now, just remove from local state since we're using mock data
+          // In production, this would call ResidentsService.deleteResident(resident.id)
+          setResidents(prev => prev.filter(r => r.id !== resident.id));
+          
+          // If using real service:
+          // await ResidentsService.deleteResident(resident.id);
+          // const updatedResidents = await ResidentsService.getResidents();
+          // setResidents(updatedResidents);
+          
+          console.log(`Résident ${resident.firstName} ${resident.lastName} supprimé avec succès`);
+        } catch (error) {
+          console.error('Erreur lors de la suppression du résident:', error);
+          alert('Erreur lors de la suppression du résident. Veuillez réessayer.');
+        }
+      }
+    });
+  };
+
   const actions = [
+    {
+      label: 'Voir',
+      onClick: handleViewResident,
+      variant: 'ghost' as const
+    },
     {
       label: 'Modifier',
       onClick: handleEditResident,
-      variant: 'ghost' as const
+      variant: 'secondary' as const
+    },
+    {
+      label: 'Supprimer',
+      onClick: handleDeleteResident,
+      variant: 'outline' as const
     }
   ];
 
@@ -284,6 +331,9 @@ const ResidentsPage: React.FC = () => {
             emptyMessage="Aucun résident trouvé"
           />
         </main>
+        
+        {/* Confirmation Dialog */}
+        <ConfirmDialog />
         </div>
       </Layout>
     </ProtectedPage>

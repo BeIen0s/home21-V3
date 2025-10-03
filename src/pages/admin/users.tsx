@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { Layout } from '@/components/layout/Layout';
 import { DataTable } from '@/components/tables/DataTable';
 import { Button } from '@/components/ui/Button';
@@ -26,6 +27,7 @@ const getRoleColor = (role: UserRole) => {
 
 
 const UserManagementPage: React.FC = () => {
+  const router = useRouter();
   const [users, setUsers] = useState<ExtendedUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ExtendedUser | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -193,6 +195,10 @@ const UserManagementPage: React.FC = () => {
         }
       }
     });
+  };
+
+const handleViewUser = (user: ExtendedUser) => {
+    router.push(`/admin/users/${user.id}`);
   };
 
   const handleDeleteUser = (user: ExtendedUser) => {
@@ -484,6 +490,11 @@ const UserManagementPage: React.FC = () => {
               data={users}
               columns={columns}
               actions={[
+                {
+                  label: 'Voir',
+                  onClick: handleViewUser,
+                  variant: 'ghost'
+                },
                 {
                   label: 'Modifier',
                   onClick: handleEditUser,

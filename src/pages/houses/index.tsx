@@ -15,13 +15,16 @@ import {
   MapPin,
   Eye,
   Edit,
+  Trash2,
   AlertTriangle,
   Clock,
   UserPlus
 } from 'lucide-react';
 import { ResidentAssignmentModal } from '@/components/houses/ResidentAssignmentModal';
 import { HouseStatus, type TableColumn } from '@/types';
+import { HousesService } from '@/services/houses.service';
 import { ProtectedPage } from '@/components/auth/ProtectedPage';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Resource } from '@/utils/permissions';
 
 // Types étendus pour la page
@@ -190,8 +193,10 @@ const HousesPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<HouseStatus | 'ALL'>('ALL');
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [selectedHouseForAssignment, setSelectedHouseForAssignment] = useState<HouseWithResident | null>(null);
+  const [houses, setHouses] = useState<HouseWithResident[]>(mockHouses);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  const filteredHouses = mockHouses.filter(house => 
+  const filteredHouses = houses.filter(house => 
     statusFilter === 'ALL' || house.status === statusFilter
   );
 
@@ -282,6 +287,54 @@ const HousesPage: React.FC = () => {
     setSelectedHouseForAssignment(null);
   };
 
+  const handleDeleteHouse = (house: HouseWithResident) => {
+    const hasActiveResident = house.currentResident && house.status === 'OCCUPIED';
+    const warningMessage = hasActiveResident
+      ? `Impossible de supprimer le logement ${house.name}. Il est actuellement occupé par ${house.currentResident?.name}. Veuillez d'abord libérer le logement.`
+      : `Êtes-vous sûr de vouloir supprimer le logement ${house.name} ? Cette action est irréversible.`;
+
+    if (hasActiveResident) {
+      confirm({
+        title: 'Suppression impossible',
+        message: warningMessage,
+        variant: 'warning',
+        confirmText: 'Compris',
+        onConfirm: () => {}
+      });
+      return;
+    }
+
+    confirm({
+      title: 'Supprimer le logement',
+      message: warningMessage,
+      variant: 'danger',
+      confirmText: 'Supprimer',
+      onConfirm: async () => {
+        try {
+          // For now, just remove from local state since we're using mock data
+          // In production, this would call HousesService.deleteHouse(house.id)
+          setHouses(prev => prev.filter(h => h.id !== house.id));
+          
+          // If using real service:
+          // await HousesService.deleteHouse(house.id);
+          // const updatedHouses = await HousesService.getHouses();
+          // setHouses(updatedHouses);
+          
+          console.log(`Logement ${house.name} supprimé avec succès`);
+        } catch (error) {
+          console.error('Erreur lors de la suppression du logement:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+          
+          if (errorMessage.includes('active residents')) {
+            alert('Impossible de supprimer ce logement car il contient des résidents actifs.');
+          } else {
+            alert('Erreur lors de la suppression du logement. Veuillez réessayer.');
+          }
+        }
+      }
+    });
+  };
+
   const actions = [
     {
       label: 'Voir',
@@ -299,16 +352,21 @@ const HousesPage: React.FC = () => {
       variant: 'ghost' as const,
       icon: UserPlus,
       condition: (house: HouseWithResident) => house.status === 'AVAILABLE'
+    },
+    {
+      label: 'Supprimer',
+      onClick: handleDeleteHouse,
+      variant: 'outline' as const
     }
   ];
 
   // Statistiques
   const stats = {
-    total: mockHouses.length,
-    available: mockHouses.filter(h => h.status === 'AVAILABLE').length,
-    occupied: mockHouses.filter(h => h.status === 'OCCUPIED').length,
-    maintenance: mockHouses.filter(h => h.status === 'MAINTENANCE').length,
-    revenue: mockHouses
+    total: houses.length,
+    available: houses.filter(h => h.status === 'AVAILABLE').length,
+    occupied: houses.filter(h => h.status === 'OCCUPIED').length,
+    maintenance: houses.filter(h => h.status === 'MAINTENANCE').length,
+    revenue: houses
       .filter(h => h.status === 'OCCUPIED')
       .reduce((sum, h) => sum + h.monthlyRent, 0)
   };
@@ -436,6 +494,9 @@ const HousesPage: React.FC = () => {
             onAssign={handleAssignmentComplete}
           />
         )}
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog />
         </div>
       </Layout>
     </ProtectedPage>
